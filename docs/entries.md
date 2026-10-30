@@ -8,10 +8,10 @@ fallback or a clear `ShelfMissingPeerError` when absent.
 
 | Entry | Main exports | Peers | Native config | Reaches (source areas) |
 |---|---|---|---|---|
-| `.` | `createShelfClient`, `ShelfProvider`, `useShelf`, `clearCache`, `createCache`, `createSwr`, errors, theme tokens | none | none | core, cache, provider, theme |
+| `.` | `createShelfClient`, `ShelfProvider`, `useShelf`, `clearCache`, `clearAll`, `registerClearAllHook`, `createCache`, `createSwr`, errors, theme tokens | none | none | core, cache, provider, theme |
 | `/camera` | `CameraButton`, `useCaptureUpload`, `createPhotoCaptureAdapter`, `createScanAdapter` | needs `expo-image-picker` for `mode="photo"`; needs `react-native-document-scanner-plugin` for `mode="scan"` (dev build); optional `@react-native-community/netinfo` | camera permission (iOS `NSCameraUsageDescription`, Android `CAMERA`) | core, cache, provider, theme, upload, shared, storage (memory) |
 | `/picker` | `DocumentPickerButton`, `PhotoLibraryButton` | needs `expo-document-picker` (documents) / `expo-image-picker` (photo library); optional netinfo | iOS `NSPhotoLibraryUsageDescription` (library); none for documents | same as camera |
-| `/upload` | `createOutbox`, `useUpload`, `useOutbox`, `useOnlineStatus`, `UploadStatusBadge`, `OfflineBanner` | optional `@react-native-community/netinfo` | none | core, cache, provider, storage, theme |
+| `/upload` | `createOutbox`, `useUpload`, `useOutbox`, `useOnlineStatus`, `UploadStatusBadge`, `OfflineBanner` (both show the pause reason), `OutboxPauseReason` | optional `@react-native-community/netinfo` | none | core, cache, provider, storage, theme |
 | `/folders` | `FolderList`, `FolderCard`, `FolderBreadcrumb`, `FolderHeader` | none | none | core, cache, provider, theme, hooks, shared |
 | `/documents` | `DocumentList`, `DocumentRow`, `DocumentCard`, thumbnail cache (`getDefaultThumbnailCache`, `setDefaultThumbnailCache`) | optional `@shopify/flash-list` (`listComponent="flashlist"`), optional `expo-file-system` (disk thumbnail cache; memory fallback) | none | core, cache, provider, theme, hooks, shared |
 | `/document` | `DocumentScreen`, `DocumentTextView`, `DocumentPreview`, `DocumentContentView`, `SiteRenderer` | optional `react-native-gesture-handler` + `react-native-reanimated` (pinch to zoom; both or neither) | none | core, cache, provider, theme, shared, hooks (`useDocument` only) |
@@ -20,6 +20,20 @@ fallback or a clear `ShelfMissingPeerError` when absent.
 | `/storage/asyncstorage` | `createAsyncStorageAdapter` | needs `@react-native-async-storage/async-storage` | none | core, storage |
 | `/storage/sqlite` | `createSqliteAdapter` | needs `expo-sqlite` | none (dev build in Expo) | core, storage |
 | `/theme` | `lightTheme`, `darkTheme`, `createTheme`, `resolveTheme`, `loadShelfFonts` | optional `expo-font` (only `loadShelfFonts`) | none | core, theme |
+
+## Sign-out and the entry graph
+
+`clearAll()` (also `clearCache({ everything: true })`) lives in the root entry (`cache/clear.ts`) and clears the read cache,
+thumbnails and the persisted upload queue. It cannot import `documents` (thumbnails) or `upload` (live queues) without
+pulling them into every bundle, and `camera` / `picker` / `upload` must not reach `documents`. So those entries
+register a hook with `registerClearAllHook` when they load: `upload/outbox.ts` registers each live outbox (removed on
+`destroy()`), `documents/thumbnails.ts` registers the default thumbnail cache. The queue's storage keys
+(`shelf:outbox:v1:<hash(scope)>:<id>`) are also deleted directly by prefix, so no entry is needed for the persisted part.
+The `upload -> cache` and `documents -> cache` edges are already permitted (both areas already import cache); no new edge was added.
+Plain `clearCache()` never touches `shelf:outbox:` keys.
+
+On a 401 / `not_configured` the outbox keeps its queue and pauses (`pauseReason` `'auth'` | `'not_configured'`); only
+the read cache is purged. See the README, "Storage, caching and sign-out" and Troubleshooting.
 
 ## Peer to entry
 

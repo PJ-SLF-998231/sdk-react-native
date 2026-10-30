@@ -33,6 +33,35 @@ test('UploadStatusBadge snapshots', () => {
   expect(tree.toJSON()).toMatchSnapshot();
 });
 
+test('UploadStatusBadge shows the pause reason on unsent items only', () => {
+  const tree = render(
+    <>
+      <UploadStatusBadge state="pending" paused="auth" />
+      <UploadStatusBadge state="pending" paused="not_configured" />
+      <UploadStatusBadge state="pending" paused="manual" />
+      <UploadStatusBadge state="done" paused="auth" />
+    </>,
+  );
+  expect(tree.toJSON()).toMatchSnapshot();
+});
+
+test('useUpload exposes the pause reason while a 401 keeps the queue', async () => {
+  const m = mockFetch([{ status: 401 }]);
+  let u!: UseUploadResult;
+  const store = createMemoryAdapter();
+  const P = () => {
+    u = useUpload({ baseUrl: 'https://x.test', getHeaders: () => ({ Authorization: 'Bearer t' }), fetch: m.fetch, connectivity: false, storage: store, cacheScope: 'u-pause' });
+    return <Text>{u.pauseReason ?? 'none'}</Text>;
+  };
+  render(<P />);
+  await act(async () => {
+    await u.enqueue({ uri: 'file:///tmp/a.pdf', name: 'a.pdf', type: 'application/pdf' });
+  });
+  await waitFor(() => expect(u.pauseReason).toBe('auth'));
+  expect([u.paused, u.all.length, u.all[0]!.state]).toEqual([true, 1, 'pending']);
+  act(() => u.resume());
+});
+
 test('OfflineBanner snapshots and visibility', () => {
   const offline = render(<OfflineBanner online={false} pendingCount={3} />);
   expect(offline.toJSON()).toMatchSnapshot('offline with pending');
@@ -40,6 +69,12 @@ test('OfflineBanner snapshots and visibility', () => {
   const paused = render(<OfflineBanner online pauseReason="auth" theme={darkTheme} />);
   expect(paused.toJSON()).toMatchSnapshot('paused auth');
   paused.unmount();
+  const noKey = render(<OfflineBanner online pauseReason="not_configured" pendingCount={2} />);
+  expect(noKey.toJSON()).toMatchSnapshot('paused not_configured');
+  noKey.unmount();
+  const signIn = render(<OfflineBanner online pauseReason="auth" pendingCount={1} />);
+  expect(signIn.toJSON()).toMatchSnapshot('paused auth with kept uploads');
+  signIn.unmount();
   const hidden = render(<OfflineBanner online />);
   expect(hidden.toJSON()).toBeNull();
 });

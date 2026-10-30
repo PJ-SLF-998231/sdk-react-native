@@ -1,3 +1,4 @@
+import { registerClearAllHook } from '../cache/clear';
 import type { AuthedSource, PreviewSize } from '../core/types';
 import { loadFileSystem } from './peers';
 import type { FileSystemLike } from './peers';
@@ -221,3 +222,7 @@ export function getDefaultThumbnailCache(): ThumbnailCache {
 export function setDefaultThumbnailCache(cache: ThumbnailCache | null): void {
   defaultCache = cache;
 }
+
+// Joins clearAll() (sign-out) without the cache area importing this entry. Only runs when this module is bundled, i.e.
+// when the host uses /documents; it clears the default cache, creating it if needed so earlier sessions' disk files go.
+registerClearAllHook(() => getDefaultThumbnailCache().clear());

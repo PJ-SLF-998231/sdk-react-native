@@ -3,6 +3,7 @@ import { Text } from 'react-native';
 import { render, screen, waitFor } from '@testing-library/react-native';
 import { ShelfProvider, useShelf, createShelfClient, createMemoryAdapterForTests } from './provider-helpers';
 import { mockFetch } from './helpers';
+import { createOutbox } from '../upload';
 import { darkTheme, lightTheme } from '../theme';
 import type { ShelfConnectionProps } from '../provider';
 
@@ -93,4 +94,25 @@ test('a 401 through the provider client purges the cache and calls onAuthLost', 
   await v.client.info().catch(() => undefined);
   await waitFor(async () => expect(await storage.list()).toEqual([]));
   expect(onAuthLost).toHaveBeenCalledTimes(1);
+});
+
+test('on 401 the read cache is purged but the persisted upload queue is kept (only sign-out clears it)', async () => {
+  const storage = createMemoryAdapterForTests();
+  const m = mockFetch([{ status: 401 }]);
+  const onAuthLost = jest.fn();
+  let v!: ReturnType<typeof useShelf>;
+  render(
+    <ShelfProvider baseUrl="https://a.test" storage={storage} cacheScope="u1" fetch={m.fetch} onAuthLost={onAuthLost}>
+      <Probe onValue={(x) => (v = x)} />
+    </ShelfProvider>,
+  );
+  await v.cache.setEntry('k', 1);
+  const ob = createOutbox({ client: v.client, storage, scope: 'u1', connectivity: false });
+  await ob.enqueue({ uri: 'file:///tmp/a.pdf', name: 'a.pdf', type: 'application/pdf' });
+  await waitFor(() => expect(ob.getSnapshot().pauseReason).toBe('auth'));
+  await waitFor(async () => expect((await storage.list()).filter((k) => k.startsWith('shelf:v1:'))).toEqual([])); // cache purged
+  expect((await storage.list()).filter((k) => k.startsWith('shelf:outbox:v1:'))).toHaveLength(1); // queue kept
+  expect(ob.getSnapshot().items.map((i) => i.state)).toEqual(['pending']);
+  expect(onAuthLost).toHaveBeenCalledTimes(1);
+  ob.destroy();
 });

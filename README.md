@@ -53,8 +53,8 @@ app  --(baseUrl + getHeaders(): your session token)-->  your proxy  --(Authoriza
   rotate and live in the platform keychain (`expo-secure-store`).
 - The proxy authenticates that session, **then** adds the integration key. It is the only place the key exists.
 - If the key is revoked the proxy answers `503 { code: 'not_configured' }` (or Shelf answers 401). The SDK treats both as
-  "authorisation lost": `onAuthLost` fires, the cache is purged and the upload queue pauses (see
-  [Troubleshooting](#troubleshooting)).
+  "authorisation lost": `onAuthLost` fires, the read cache is purged and the upload queue **pauses and keeps every
+  unsent file** (see [Troubleshooting](#troubleshooting) and [Sign-out](#storage-caching-and-sign-out)).
 
 ### Minimal Express proxy
 
@@ -190,10 +190,25 @@ const storage = createAsyncStorageAdapter();
 </ShelfProvider>
 
 function QueueList() {
-  const { items } = useOutbox();
-  return items.map((i) => <UploadStatusBadge key={i.id} item={i} />);
+  const { snapshot } = useOutbox();
+  return snapshot.items.map((i) => <UploadStatusBadge key={i.id} item={i} paused={snapshot.pauseReason} />);
 }
 ```
+
+**When the credential is refused (401 or the proxy's 503 `not_configured`) the queue is kept, never purged.** The outbox
+stops draining and pauses: `snapshot.paused` is true and `snapshot.pauseReason` is `'auth'` (401, label "Needs sign-in")
+or `'not_configured'` (label "Not connected"); `'manual'` is your own `pause()`. Every unsent item stays in memory and in
+storage, with its file URI and `client_ref`; running uploads are aborted and go back to pending. `onAuthLost` fires once
+for the pause, not once per item. `UploadStatusBadge paused={snapshot.pauseReason}` and
+`OfflineBanner pauseReason={snapshot.pauseReason} pendingCount={...}` show it. The pause is not persisted: after an app
+restart the queue loads all items and the first attempt either works (valid token) or pauses again, so nothing is lost
+and nothing is stuck.
+
+To continue, fix the credential (the user signs in again, or the key is restored on your proxy), then call
+`resume()` (from `useOutbox()` / `useUpload()` / the outbox). `getHeaders` runs before every request, so a refreshed
+token is picked up by the next attempt; there is no polling. `resume()` drains the kept items once each: a file whose
+earlier attempt reached the server is re-sent with the same `client_ref`, so it is not duplicated. If the credential is
+still refused the queue pauses again and `onAuthLost` fires again. Only sign-out (`clearAll()`) discards the queue.
 
 With a persistent `storage` the queue survives an app restart. Without one it is memory-only. NetInfo makes uploads
 wait while offline and retry on reconnect; without it the device is assumed always online.
@@ -251,7 +266,7 @@ provider, theme tokens and errors, and no UI. Details and the build-time guarant
 
 | Entry | Gives you | Optional peers it can use |
 |---|---|---|
-| `.` | `createShelfClient`, `ShelfProvider`, `useShelf`, `clearCache`, errors, theme tokens | none |
+| `.` | `createShelfClient`, `ShelfProvider`, `useShelf`, `clearCache`, `clearAll`, errors, theme tokens | none |
 | `/camera` | `CameraButton` (photo, scan), `useCaptureUpload` | `expo-image-picker` (photo), `react-native-document-scanner-plugin` (scan), `@react-native-community/netinfo` (reconnect) |
 | `/picker` | `DocumentPickerButton`, `PhotoLibraryButton` | `expo-document-picker`, `expo-image-picker`, `@react-native-community/netinfo` |
 | `/upload` | `createOutbox`, `useUpload`, `useOutbox`, `UploadStatusBadge`, `OfflineBanner` | `@react-native-community/netinfo` |
@@ -343,20 +358,27 @@ a background request replaces them, and a failed refresh keeps what is shown (`o
 - **Freshness**: `offline={{ staleMs }}` (default 30 s). The host should call `swr.revalidateAll()` when the app returns to
   the foreground (`AppState`); NetInfo reconnect does it for uploads.
 
-**On sign-out, clear what the device kept:**
+**Auth loss versus sign-out.** On a 401 / `not_configured` the SDK purges the read cache (a revoked key must not keep
+showing stale data as live) but keeps the upload queue. Sign-out is the one thing that clears the queue.
+
+**On sign-out, clear what the device kept, in one call:**
 
 ```ts
-import { clearCache } from '@pj-slf-998231/sdk-react-native';
-import { getDefaultThumbnailCache } from '@pj-slf-998231/sdk-react-native/documents'; // only if you use /documents
+import { clearAll } from '@pj-slf-998231/sdk-react-native';
 
-await clearCache({ storage, baseUrl, cacheScope: userId }); // cached listings and details (omit scope args for every user)
-await getDefaultThumbnailCache().clear();                    // thumbnail pictures on disk
+await clearAll({ storage, baseUrl, cacheScope: userId }); // omit the scope args to clear every user
+// same as clearCache({ storage, baseUrl, cacheScope: userId, everything: true })
 ```
 
-`clearCache` covers data, not pictures: the thumbnail disk cache (LRU, 64 MB, optional `expo-file-system`) is a separate
-call. Also drop your own session token. `clearCache` removes only cached data; the persisted upload queue is separate, so
-signing out with unsent uploads leaves them for the next user of that scope: wait for the queue to drain or discard it
-yourself.
+`clearAll` clears the cached listings and details, the thumbnails (the default thumbnail cache when you use `/documents`;
+pass `thumbnails: myCache` to also clear one you injected) and the persisted upload queue, including live outboxes in
+memory (running uploads are aborted). It never touches the files the queued URIs point at and never rejects. A scoped
+call leaves other users' data alone. Plain `clearCache()` is narrower: it clears only the read cache and **keeps the queue
+and thumbnails**. Also drop your own session token.
+
+How it reaches `/documents` and `/upload` without breaking the entry graph: the root entry owns `clearAll`, and those
+entries register themselves with it (`registerClearAllHook`) when they are loaded, so `camera`, `picker` and `upload` do
+not import `documents`. An app that never loads `/documents` simply has no default thumbnail cache to clear.
 
 ## Theme
 
@@ -420,9 +442,10 @@ make sure TypeScript uses `"moduleResolution": "bundler"`. Developing against a 
 missing and Metro could not treat it as optional. Install that peer, or open an issue naming the entry.
 
 **Everything is signed out / the queue stopped (401).** A 401, or the proxy's `503 not_configured`, means the integration
-key was refused or revoked. The SDK purges its cached data, **drops the queued, unsent files** (they are removed from
-storage too, because nothing queued can succeed with that key), pauses the queue, and calls `onAuthLost`. Fix the key on
-the server, then call `resume()` (from `useOutbox()` / `useUpload()`) and have the user capture again. Your own proxy
+key was refused or revoked. The SDK purges its cached data, pauses the queue (`pauseReason` `'auth'` or
+`'not_configured'`) and calls `onAuthLost` once. **Queued, unsent files are kept**, in memory and in storage; no file is
+lost. Fix the credential (sign in again, or restore the key on the server), then call `resume()` (from `useOutbox()` /
+`useUpload()`) and the kept files upload, each once. Only `clearAll()` on sign-out discards them. Your own proxy
 should return 401 only for an expired app session (refresh the token in `getHeaders` and retry) and never for a problem
 with the Shelf key.
 

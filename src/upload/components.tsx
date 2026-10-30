@@ -4,7 +4,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import { useShelfContext } from '../provider';
 import { lightTheme } from '../theme/tokens';
 import type { ShelfTheme } from '../theme/tokens';
-import type { OutboxItem, OutboxState } from './outbox';
+import type { OutboxItem, OutboxPauseReason, OutboxState } from './outbox';
 import { useOnlineStatus } from './useOutbox';
 
 function useTheme(override?: ShelfTheme): ShelfTheme {
@@ -19,24 +19,32 @@ export function uploadStatusLabel(state: OutboxState, progress = 0, attempts = 0
   return attempts > 0 ? 'Retrying' : 'Waiting';
 }
 
+/** Label for a paused queue: "Needs sign-in" (401), "Not connected" (503 not_configured), "Paused" (manual). */
+export function pauseStatusLabel(reason: OutboxPauseReason): string {
+  return reason === 'auth' ? 'Needs sign-in' : reason === 'not_configured' ? 'Not connected' : 'Paused';
+}
+
 export interface UploadStatusBadgeProps {
   /** An outbox item, or give `state` (+ `progress`) directly. */
   item?: Pick<OutboxItem, 'state' | 'progress' | 'attempts'>;
   state?: OutboxState;
   progress?: number;
+  /** The queue's pauseReason. While set, an unsent (pending) item shows the pause label instead of "Waiting". */
+  paused?: OutboxPauseReason | null;
   theme?: ShelfTheme;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
 /** A small status pill: a dot and a label. Waiting is dashed, uploading and done use the accent, failed the danger colour. */
-export function UploadStatusBadge({ item, state, progress, theme, style, testID }: UploadStatusBadgeProps): React.ReactElement {
+export function UploadStatusBadge({ item, state, progress, paused, theme, style, testID }: UploadStatusBadgeProps): React.ReactElement {
   const t = useTheme(theme);
   const s = item?.state ?? state ?? 'pending';
-  const label = uploadStatusLabel(s, item?.progress ?? progress, item?.attempts);
+  const showPause = Boolean(paused) && s === 'pending';
+  const label = showPause ? pauseStatusLabel(paused as OutboxPauseReason) : uploadStatusLabel(s, item?.progress ?? progress, item?.attempts);
   const c = t.colors;
   const tone =
-    s === 'failed'
+    s === 'failed' || (showPause && paused !== 'manual')
       ? { text: c.danger, border: c.danger, bg: c.bg, dashed: false }
       : s === 'pending'
         ? { text: c.accentText, border: c.accentText, bg: c.bgSoft, dashed: true }
@@ -65,7 +73,7 @@ export interface OfflineBannerProps {
   /** Uploads waiting; shown in the message. */
   pendingCount?: number;
   /** Set when the outbox is paused because the key was revoked. */
-  pauseReason?: 'auth' | 'manual' | null;
+  pauseReason?: OutboxPauseReason | null;
   theme?: ShelfTheme;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -76,11 +84,14 @@ export function OfflineBanner(props: OfflineBannerProps): React.ReactElement | n
   const t = useTheme(props.theme);
   const status = useOnlineStatus();
   const online = props.online ?? status.online;
-  const authPaused = props.pauseReason === 'auth';
+  const authPaused = props.pauseReason === 'auth' || props.pauseReason === 'not_configured';
   if (online && !authPaused) return null;
   const n = props.pendingCount ?? 0;
+  const kept = n > 0 ? ` ${n} upload${n === 1 ? ' is' : 's are'} kept and will be sent afterwards.` : '';
   const message = authPaused
-    ? 'Uploads are paused because the connection to Shelf is no longer authorised.'
+    ? props.pauseReason === 'not_configured'
+      ? `Shelf is not connected, so uploads are paused.${kept}`
+      : `Sign in again to continue uploading.${kept}`
     : n > 0
       ? `You are offline. ${n} upload${n === 1 ? '' : 's'} will continue when you reconnect.`
       : 'You are offline. Uploads will continue when you reconnect.';

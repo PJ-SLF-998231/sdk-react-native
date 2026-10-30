@@ -5,6 +5,7 @@ import type { GetHeaders, ShelfErrorLike, ShelfItem, UploadFile, UploadOptions }
 import { createMemoryAdapter } from '../storage/memory';
 import { getDefaultConnectivity } from './connectivity';
 import type { ConnectivitySource } from './connectivity';
+import { outboxPrefix, registerClearAllHook } from '../cache/clear';
 import { backoffDelay, classifyUploadError } from './errors';
 
 export type OutboxState = 'pending' | 'uploading' | 'failed' | 'done';
@@ -48,13 +49,17 @@ export interface EnqueueInput {
   on_duplicate?: string;
 }
 
+/** Why the queue is not draining: the server refused the credential (401), the proxy has no key (503 not_configured), or the host paused it. */
+export type OutboxPauseReason = 'auth' | 'not_configured' | 'manual';
+
 export interface OutboxSnapshot {
   items: readonly OutboxItem[];
   online: boolean;
   /** Whether online/offline is actually tracked (false without the netinfo peer). */
   connectivityTracked: boolean;
   paused: boolean;
-  pauseReason: 'auth' | 'manual' | null;
+  /** Null while draining. 'auth' and 'not_configured' keep every queued item; see Outbox.resume(). */
+  pauseReason: OutboxPauseReason | null;
   counts: { pending: number; uploading: number; failed: number; done: number };
 }
 
@@ -107,20 +112,16 @@ export interface Outbox {
   /** Drops all `done` items from the list. */
   clearDone(): void;
   pause(): void;
-  /** Lifts a manual or auth pause. Call after the user signed in again. */
+  /**
+   * Lifts any pause (manual, 'auth', 'not_configured') and drains the kept queue. Idempotent while not paused. Every
+   * attempt calls `getHeaders` afresh, so refresh the credential first, then call this. If the server still refuses it,
+   * the queue pauses again and onAuthLost fires again (a new pause). client_ref makes the re-sent files idempotent.
+   */
   resume(): void;
   getSnapshot(): OutboxSnapshot;
   subscribe(listener: () => void): () => void;
   /** Stops timers and in-flight requests without touching storage: a new outbox on the same storage resumes. */
   destroy(): void;
-}
-
-const KEY_PREFIX = 'shelf:outbox:v1:';
-
-function hashScope(s: string): string {
-  let h = 5381;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
-  return (h >>> 0).toString(36);
 }
 
 interface Entry {
@@ -134,11 +135,11 @@ export function createOutbox(options: OutboxOptions): Outbox {
   const client =
     options.client ??
     (options.baseUrl
-      ? createShelfClient({ baseUrl: options.baseUrl, getHeaders: options.getHeaders, fetch: options.fetch, onAuthLost: options.onAuthLost })
+      ? createShelfClient({ baseUrl: options.baseUrl, getHeaders: options.getHeaders, fetch: options.fetch })
       : null);
   if (!client && !options.upload) throw new Error('Shelf outbox: pass a `client`, or `baseUrl` (with `getHeaders`).');
   const storage = options.storage ?? createMemoryAdapter();
-  const prefix = `${KEY_PREFIX}${hashScope(options.scope ?? '')}:`;
+  const prefix = outboxPrefix(options.scope);
   const concurrency = Math.max(1, Math.min(3, Math.floor(options.concurrency ?? 3)));
   const baseMs = options.backoff?.baseMs ?? 1_000;
   const maxMs = options.backoff?.maxMs ?? 60_000;
@@ -152,7 +153,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
   const entries = new Map<string, Entry>();
   const listeners = new Set<() => void>();
   let online = true;
-  let pauseReason: 'auth' | 'manual' | null = null;
+  let pauseReason: OutboxPauseReason | null = null;
   let destroyed = false;
   let timer: ReturnType<typeof setTimeout> | null = null;
   let snapshot: OutboxSnapshot | null = null;
@@ -257,7 +258,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
       const e = err as { message?: string; code?: string; status?: number };
       const base = { message: e?.message || 'Upload failed', code: e?.code, status: e?.status };
       if (kind === 'auth') {
-        await purgeAndPause();
+        pauseForAuth(entry, err);
         return;
       }
       if (kind === 'cancelled') {
@@ -286,14 +287,43 @@ export function createOutbox(options: OutboxOptions): Outbox {
     pump();
   }
 
-  /** The key was revoked: nothing queued can succeed, so abort, drop persisted work and stop until resume(). */
-  async function purgeAndPause(): Promise<void> {
-    const ids = [...entries.keys()];
-    for (const [id, e] of entries) {
-      e.controller?.abort();
-      if (e.item.state !== 'done') entries.delete(id);
+  /**
+   * 401 or 503 not_configured: nothing can succeed until the host fixes the credential, but nothing is lost. Every
+   * unsent item (including the one that was refused) goes back to pending, in memory and in storage as it was, running
+   * uploads are aborted, and draining stops until resume(). onAuthLost fires once per pause, not once per item.
+   */
+  function pauseForAuth(refused: Entry, err: unknown): void {
+    const reason: OutboxPauseReason = (err as { status?: number }).status === 503 ? 'not_configured' : 'auth';
+    for (const e of entries.values()) {
+      if (e.item.state !== 'uploading') continue;
+      const c = e.controller;
+      e.controller = undefined; // so the aborted request's own catch is ignored
+      update(e, { state: 'pending', progress: 0, nextAttemptAt: 0, error: undefined });
+      c?.abort();
     }
-    pauseReason = 'auth';
+    if (refused.item.state === 'uploading') update(refused, { state: 'pending', progress: 0, nextAttemptAt: 0, error: undefined });
+    const first = pauseReason !== 'auth' && pauseReason !== 'not_configured';
+    pauseReason = reason;
+    clearTimer();
+    emit();
+    if (first) {
+      try {
+        options.onAuthLost?.(err as ShelfErrorLike);
+      } catch {
+        /* a host callback must not break the queue */
+      }
+    }
+  }
+
+  /** clearAll(): forget every item (aborting running ones) and delete this queue's records. Files at the URIs are not touched. */
+  async function clearQueue(): Promise<void> {
+    const ids = [...entries.keys()];
+    for (const e of entries.values()) {
+      const c = e.controller;
+      e.controller = undefined;
+      c?.abort();
+    }
+    entries.clear();
     clearTimer();
     emit();
     await Promise.all(ids.map(unpersist));
@@ -335,6 +365,13 @@ export function createOutbox(options: OutboxOptions): Outbox {
     : () => undefined;
 
   void ready.then(pump);
+
+  const unregisterClear = registerClearAllHook(async (ctx) => {
+    if (destroyed) return;
+    if (ctx.scoped && outboxPrefix(ctx.cacheScope) !== prefix) return;
+    await ready;
+    await clearQueue();
+  });
 
   return {
     ready,
@@ -425,6 +462,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
       destroyed = true;
       clearTimer();
       unsubscribeNet();
+      unregisterClear();
       for (const e of entries.values()) {
         e.controller?.abort();
         e.controller = undefined;
