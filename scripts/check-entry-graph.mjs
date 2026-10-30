@@ -11,6 +11,7 @@ const FORBIDDEN_SPECIFIERS = [/^react-dom($|\/)/, /indexeddb/i, /\.css$/i];
 const DOM_IN_BUNDLE = [/\bindexedDB\b/, /\bIDB(Database|Factory|Request|Transaction)\b/, /\bdocument\.(createElement|getElementById|querySelector|body|head)\b/, /\bwindow\.(addEventListener|location|localStorage)\b/, /\blocalStorage\b/];
 // Code areas the camera entry must not reach.
 const CAMERA_FORBIDDEN_DIRS = ["folders", "documents", "document", "hooks", "storage"];
+const UPLOAD_FORBIDDEN_DIRS = ["folders", "documents", "document", "camera", "picker"];
 // Explicit allow-list: "<entry> -> <area>" edges that are permitted. Keep empty unless justified.
 const ALLOW = new Set([]);
 
@@ -67,6 +68,13 @@ for (const entry of ["index", ...ENTRIES]) {
       if (CAMERA_FORBIDDEN_DIRS.includes(area) && !ALLOW.has(`camera -> ${area}`)) {
         errors.push(`camera reaches ${relative(root, f)} (area "${area}") without allow-list entry`);
       }
+    }
+  }
+  if (entry === "upload") {
+    // The upload entry may use core, storage, theme and provider, but not the folder/document browsing UI.
+    for (const f of files) {
+      const area = relative(src, f).split("/")[0];
+      if (UPLOAD_FORBIDDEN_DIRS.includes(area)) errors.push(`upload reaches ${relative(root, f)} (area "${area}")`);
     }
   }
   const out = join(root, "dist", `${entry}.js`);

@@ -68,3 +68,10 @@ cannot.
 
 The web SDK splits a platform-neutral `@pj-slf-998231/sdk/core` entry with injectable auth and storage; then this
 folder can be replaced by that dependency.
+
+## Addendum (U3): entry-graph and provider changes
+
+- The `upload` entry may reach `core`, `storage`, `theme` and `provider`; `check:size` now fails it if it reaches
+  `folders`, `documents`, `document`, `camera` or `picker`. No allow-list entry was added.
+- `ShelfContextValue` gained `storage` and `scope` (the host's values as given) so the outbox can persist on the
+  provider's adapter. `@react-native-community/netinfo` joined the lazily required optional peers.

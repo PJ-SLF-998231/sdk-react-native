@@ -38,6 +38,9 @@ export interface ShelfContextValue {
   swr: Swr;
   theme: ShelfTheme;
   offline: Required<OfflineSettings>;
+  /** The host's storage adapter and cache scope, as given; the upload outbox persists its queue on them. */
+  storage?: StorageAdapter;
+  scope?: string;
 }
 
 const Ctx = createContext<ShelfContextValue | null>(null);
@@ -97,7 +100,7 @@ function useBuild(props: ShelfConnectionProps, active: boolean): ShelfContextVal
     return props.themeOverrides ? createTheme(props.themeOverrides, base) : base;
   }, [props.theme, props.themeOverrides, scheme]);
 
-  return useMemo(() => (core ? { ...core, theme, offline: { enabled: offlineEnabled, staleMs } } : null), [core, theme, offlineEnabled, staleMs]);
+  return useMemo(() => (core ? { ...core, theme, offline: { enabled: offlineEnabled, staleMs }, storage, scope: cacheScope } : null), [core, theme, offlineEnabled, staleMs, storage, cacheScope]);
 }
 
 export function ShelfProvider(props: ShelfConnectionProps & { children?: React.ReactNode }): React.ReactElement {
