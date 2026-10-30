@@ -1,12 +1,13 @@
 import { createShelfClient } from '../core/client';
 import type { ShelfClient } from '../core/client';
+import { credentialFingerprint } from '../core/fingerprint';
 import { createAuthSession, getAuthSession } from '../core/session';
 import type { StorageAdapter } from '../core/storage-adapter';
 import type { GetHeaders, ShelfErrorLike, ShelfItem, UploadFile, UploadOptions } from '../core/types';
 import { createMemoryAdapter } from '../storage/memory';
 import { getDefaultConnectivity } from './connectivity';
 import type { ConnectivitySource } from './connectivity';
-import { outboxPrefix, registerClearAllHook } from '../cache/clear';
+import { outboxPrefix, registerClearAllTarget } from '../cache/clear';
 import { backoffDelay, classifyUploadError } from './errors';
 
 export type OutboxState = 'pending' | 'uploading' | 'failed' | 'done';
@@ -61,6 +62,10 @@ export interface OutboxSnapshot {
   paused: boolean;
   /** Null while draining. 'auth' and 'not_configured' keep every queued item; see Outbox.resume(). */
   pauseReason: OutboxPauseReason | null;
+  /** When the current 'auth' / 'not_configured' pause began (ms epoch; kept across a restart), else null. */
+  pausedAt: number | null;
+  /** True while a paused queue is sending its one probe item to find out whether the credential works again. */
+  probing: boolean;
   counts: { pending: number; uploading: number; failed: number; done: number };
 }
 
@@ -119,6 +124,12 @@ export interface Outbox {
    * the queue pauses again and onAuthLost fires again (a new pause). client_ref makes the re-sent files idempotent.
    */
   resume(): void;
+  /**
+   * Sends ONE queued item now, whatever the credential fingerprint says, to find out whether the pause is over: on
+   * success (or any answer that is not a refusal) the queue resumes and drains; on 401 / `not_configured` it stays
+   * paused and `onAuthLost` does not fire again. Does nothing for a manual pause or when nothing is paused.
+   */
+  retryNow(): void;
   getSnapshot(): OutboxSnapshot;
   subscribe(listener: () => void): () => void;
   /** Stops timers and in-flight requests without touching storage: a new outbox on the same storage resumes. */
@@ -131,6 +142,17 @@ interface Entry {
 }
 
 type Persisted = Omit<OutboxItem, 'result' | 'progress'>;
+
+/**
+ * The persisted pause. `fingerprint` is credentialFingerprint() of the headers in use when the refusal happened (16 hex
+ * characters of a SHA-256), or null when unknown. The credential itself is never written.
+ */
+interface PersistedPause {
+  v: 1;
+  reason: 'auth' | 'not_configured';
+  pausedAt: number;
+  fingerprint: string | null;
+}
 
 export function createOutbox(options: OutboxOptions): Outbox {
   const client =
@@ -158,6 +180,9 @@ export function createOutbox(options: OutboxOptions): Outbox {
   const listeners = new Set<() => void>();
   let online = true;
   let pauseReason: OutboxPauseReason | null = null;
+  let pausedAt: number | null = null;
+  let probing = false;
+  const pauseKey = `${prefix}~pause`;
   let destroyed = false;
   let timer: ReturnType<typeof setTimeout> | null = null;
   let snapshot: OutboxSnapshot | null = null;
@@ -176,7 +201,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
     const items = [...entries.values()].map((e) => e.item).sort((a, b) => a.createdAt - b.createdAt || (a.id < b.id ? -1 : 1));
     const counts = { pending: 0, uploading: 0, failed: 0, done: 0 };
     for (const i of items) counts[i.state]++;
-    snapshot = { items, online, connectivityTracked: Boolean(connectivity?.tracked), paused: pauseReason !== null, pauseReason, counts };
+    snapshot = { items, online, connectivityTracked: Boolean(connectivity?.tracked), paused: pauseReason !== null, pauseReason, pausedAt, probing, counts };
     return snapshot;
   }
 
@@ -201,6 +226,41 @@ export function createOutbox(options: OutboxOptions): Outbox {
     }
   }
 
+  async function persistPause(fingerprint: string | null): Promise<void> {
+    if (pauseReason !== 'auth' && pauseReason !== 'not_configured') return;
+    const rec: PersistedPause = { v: 1, reason: pauseReason, pausedAt: pausedAt ?? now(), fingerprint };
+    try {
+      await storage.set(pauseKey, JSON.stringify(rec));
+    } catch {
+      /* the pause then lasts only until the next restart */
+    }
+  }
+
+  async function unpersistPause(): Promise<void> {
+    try {
+      await storage.delete(pauseKey);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /** The pause is over: clear it in memory and in storage. */
+  function liftPause(): void {
+    const persisted = pauseReason === 'auth' || pauseReason === 'not_configured';
+    pauseReason = null;
+    pausedAt = null;
+    probing = false;
+    if (persisted) void unpersistPause();
+  }
+
+  /** Reads getHeaders once and fingerprints it. Null when this outbox has no way to (a custom transport with no client or getHeaders). */
+  function readFingerprint(): Promise<string> | null {
+    const viaClient = session.readCredential();
+    if (viaClient) return viaClient;
+    const gh = options.getHeaders;
+    return gh ? (async () => credentialFingerprint(await gh()))() : null;
+  }
+
   function update(entry: Entry, patch: Partial<OutboxItem>) {
     entry.item = { ...entry.item, ...patch };
   }
@@ -212,7 +272,8 @@ export function createOutbox(options: OutboxOptions): Outbox {
 
   function pump() {
     clearTimer();
-    if (destroyed || pauseReason || !online) return;
+    if (destroyed || (pauseReason && !probing) || !online) return;
+    const limit = probing ? 1 : concurrency;
     const t = now();
     let active = 0;
     const waiting: Entry[] = [];
@@ -224,7 +285,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
     let nextWake = Infinity;
     for (const e of waiting) {
       if (e.item.nextAttemptAt <= t) {
-        if (active < concurrency) {
+        if (active < limit) {
           active++;
           void run(e);
         }
@@ -253,6 +314,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
       if (destroyed || entry.controller !== controller || entries.get(item.id) !== entry) return;
       entry.controller = undefined;
       update(entry, { state: 'done', progress: 1, result, error: undefined });
+      if (probing) endProbe();
       await unpersist(item.id);
       emit();
     } catch (err) {
@@ -269,6 +331,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
         update(entry, { state: 'failed', error: { ...base, code: 'cancelled', permanent: true } });
       } else if (kind === 'permanent') {
         update(entry, { state: 'failed', attempts: entry.item.attempts + 1, error: { ...base, permanent: true } });
+        if (probing) endProbe(); // the server answered with something other than a refusal: the credential works
       } else {
         const attempts = entry.item.attempts + 1;
         if (attempts >= maxAttempts) {
@@ -296,6 +359,29 @@ export function createOutbox(options: OutboxOptions): Outbox {
    * unsent item (including the one that was refused) goes back to pending, in memory and in storage as it was, running
    * uploads are aborted, and draining stops until resume(). onAuthLost fires once per pause, not once per item.
    */
+  /** The probe item got an answer that is not a refusal: the credential works, so the pause ends and the queue drains. */
+  function endProbe(): void {
+    liftPause();
+    session.reportSuccess();
+    emit();
+  }
+
+  /** Sends one queued item to test the credential. With nothing queued there is nothing to test: the pause just lifts. */
+  function startProbe(): void {
+    if (destroyed || (pauseReason !== 'auth' && pauseReason !== 'not_configured') || probing) return;
+    const queued = [...entries.values()].filter((e) => e.item.state === 'pending');
+    if (queued.length === 0) {
+      liftPause();
+      session.resume();
+      emit();
+      return;
+    }
+    for (const e of queued) update(e, { nextAttemptAt: 0 });
+    probing = true;
+    emit();
+    pump();
+  }
+
   function pauseForAuth(refused: Entry, err: unknown): void {
     const reason: OutboxPauseReason = (err as { status?: number }).status === 503 ? 'not_configured' : 'auth';
     for (const e of entries.values()) {
@@ -306,11 +392,14 @@ export function createOutbox(options: OutboxOptions): Outbox {
       c?.abort();
     }
     if (refused.item.state === 'uploading') update(refused, { state: 'pending', progress: 0, nextAttemptAt: 0, error: undefined });
+    if (pauseReason !== reason) pausedAt = now();
     pauseReason = reason;
+    probing = false; // a refused probe leaves the queue paused, and the open episode keeps onAuthLost quiet
     clearTimer();
     emit();
     // Opens the episode (and tells the host) only for the first refusal; later ones just keep the queue paused.
     session.reportAuthFailure(err as ShelfErrorLike);
+    void persistPause(session.active?.fingerprint ?? session.fingerprint);
   }
 
   /** clearAll(): forget every item (aborting running ones) and delete this queue's records. Files at the URIs are not touched. */
@@ -323,8 +412,14 @@ export function createOutbox(options: OutboxOptions): Outbox {
     }
     entries.clear();
     clearTimer();
+    const wasAuthPaused = pauseReason === 'auth' || pauseReason === 'not_configured';
+    if (wasAuthPaused) {
+      liftPause();
+      session.resume();
+    }
     emit();
     await Promise.all(ids.map(unpersist));
+    if (wasAuthPaused) await unpersistPause();
   }
 
   const ready = (async () => {
@@ -335,6 +430,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
       keys = [];
     }
     for (const k of keys) {
+      if (k === pauseKey) continue;
       try {
         const raw = await storage.get(k);
         if (!raw) continue;
@@ -346,8 +442,51 @@ export function createOutbox(options: OutboxOptions): Outbox {
         /* skip an unreadable record */
       }
     }
+    let persistedPause: PersistedPause | null = null;
+    try {
+      const raw = await storage.get(pauseKey);
+      const p = raw ? (JSON.parse(raw) as PersistedPause) : null;
+      if (p && (p.reason === 'auth' || p.reason === 'not_configured') && typeof p.pausedAt === 'number') persistedPause = p;
+    } catch {
+      /* an unreadable pause record counts as none */
+    }
+    if (persistedPause && !destroyed && !pauseReason) {
+      // Paused before the restart: show it at once and keep sending nothing until the credential is looked at.
+      pauseReason = persistedPause.reason;
+      pausedAt = persistedPause.pausedAt;
+      session.restoreEpisode({ reason: persistedPause.reason, fingerprint: persistedPause.fingerprint, startedAt: persistedPause.pausedAt });
+    }
     emit();
+    if (persistedPause && pauseReason === persistedPause.reason) void reconcile(persistedPause);
   })();
+
+  /**
+   * After a restart with a persisted pause: read getHeaders once. A different fingerprint means the host has refreshed
+   * the credential, so one probe item goes out; the same one keeps the queue paused until resume() / retryNow() / a
+   * credential change. getHeaders throwing (or no way to read it) also keeps it paused, quietly.
+   */
+  async function reconcile(p: PersistedPause): Promise<void> {
+    const read = p.fingerprint === null ? null : readFingerprint();
+    if (!read) return;
+    let current: string;
+    try {
+      current = await read;
+    } catch {
+      return;
+    }
+    if (destroyed || !pauseReason || probing) return;
+    // A different credential ends the restored episode ('credential'), which the listener below turns into the probe.
+    session.observeCredential(current);
+  }
+
+  // A credential change seen while auth-paused (restart or not) earns one probe; the episode stays silently open, as the
+  // host already knows about this pause.
+  const offEpisode = session.onEpisode((ev) => {
+    if (ev.type !== 'end' || ev.cause !== 'credential' || destroyed) return;
+    if (pauseReason !== 'auth' && pauseReason !== 'not_configured') return;
+    session.restoreEpisode({ reason: pauseReason, fingerprint: session.fingerprint, startedAt: pausedAt ?? now() });
+    startProbe();
+  });
 
   const unsubscribeNet = connectivity
     ? connectivity.subscribe((next) => {
@@ -364,14 +503,18 @@ export function createOutbox(options: OutboxOptions): Outbox {
 
   void ready.then(pump);
 
-  const unregisterClear = registerClearAllHook(async (ctx) => {
-    if (destroyed) return;
-    if (ctx.scoped && outboxPrefix(ctx.cacheScope) !== prefix) return;
-    await ready;
-    await clearQueue();
-  });
+  // Held weakly by the clearAll registry; `clearTarget` lives exactly as long as this outbox (see `keepAlive` below).
+  const clearTarget = {
+    clear: async (ctx: { scoped: boolean; cacheScope?: string }) => {
+      if (destroyed) return;
+      if (ctx.scoped && outboxPrefix(ctx.cacheScope) !== prefix) return;
+      await ready;
+      await clearQueue();
+    },
+  };
+  const unregisterClear = registerClearAllTarget(clearTarget);
 
-  return {
+  const api: Outbox = {
     ready,
     async enqueue(input) {
       if (!input.uri || !input.name || !input.type) throw new Error('Shelf outbox: enqueue needs uri, name and type.');
@@ -448,9 +591,13 @@ export function createOutbox(options: OutboxOptions): Outbox {
     resume() {
       session.resume(); // the host says the credential is fixed: a refusal now is a new episode
       if (!pauseReason) return;
-      pauseReason = null;
+      liftPause();
       emit();
       pump();
+    },
+    retryNow() {
+      if (pauseReason === 'auth' || pauseReason === 'not_configured') startProbe();
+      else if (!pauseReason) pump();
     },
     getSnapshot,
     subscribe(l) {
@@ -463,6 +610,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
       unsubscribeNet();
       offAuthLost();
       unregisterClear();
+      offEpisode();
       for (const e of entries.values()) {
         e.controller?.abort();
         e.controller = undefined;
@@ -470,4 +618,9 @@ export function createOutbox(options: OutboxOptions): Outbox {
       listeners.clear();
     },
   };
+  keepAlive.set(api, clearTarget);
+  return api;
 }
+
+// Ties the clearAll target's lifetime to the outbox object's: the registry only holds the target weakly.
+const keepAlive = new WeakMap<object, object>();

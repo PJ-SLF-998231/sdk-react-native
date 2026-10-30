@@ -27,6 +27,8 @@ function net() {
   return { source, set: (o: boolean) => l?.(o) };
 }
 
+/** Storage keys of queued items (the persisted pause record, key `~pause`, is not an item). */
+const queueKeys = async (st: { list(): Promise<string[]> }) => (await st.list()).filter((k) => !k.endsWith('~pause'));
 const flush = () => jest.advanceTimersByTimeAsync(0);
 const base = { connectivity: false as const, random: () => 0.5, backoff: { baseMs: 1000, maxMs: 60000 } };
 const outboxes: Outbox[] = [];
@@ -136,7 +138,7 @@ describe.each([
     expect([s.paused, s.pauseReason]).toEqual([true, reason]);
     expect(s.items.map((i) => i.state)).toEqual(['pending', 'pending', 'pending']);
     expect(s.items.map((i) => i.attempts)).toEqual([0, 0, 0]);
-    expect(await storage.list()).toHaveLength(3); // nothing purged
+    expect(await queueKeys(storage)).toHaveLength(3); // nothing purged
     expect(onAuthLost).toHaveBeenCalledTimes(1);
     await jest.advanceTimersByTimeAsync(120000);
     expect(t.calls).toHaveLength(2); // stopped
@@ -181,7 +183,7 @@ test('resume() while the credential is still refused pauses again and notifies a
   expect(ob.getSnapshot().paused).toBe(false);
 });
 
-test('an app restart while auth-paused keeps the items; the new outbox drains them on resume()', async () => {
+test('an app restart while auth-paused keeps the items and the pause; the new outbox drains them on resume()', async () => {
   const storage = createMemoryAdapter();
   const t = controlled();
   const first = make({ ...base, client: createShelfClient({ baseUrl: 'https://x.test' }), storage, upload: t.upload });
@@ -192,30 +194,24 @@ test('an app restart while auth-paused keeps the items; the new outbox drains th
   await flush();
   expect(first.getSnapshot().pauseReason).toBe('auth');
   first.destroy(); // the app dies
-  // The pause is not persisted (a restart with a valid token must just work). The new queue loads both items, and
-  // when the credential is still refused its first attempt pauses it again, with nothing lost.
+  // The pause is persisted: the new outbox is paused as soon as it is ready, with both items kept and nothing sent.
   const t2 = controlled();
   const onAuthLost = jest.fn();
   const second = make({ ...base, client: createShelfClient({ baseUrl: 'https://x.test' }), storage, upload: t2.upload, onAuthLost });
   await second.ready;
   await flush();
-  expect(second.getSnapshot().items.map((i) => i.uri).sort()).toEqual([file(1).uri, file(2).uri]);
-  expect(t2.calls).toHaveLength(2);
-  t2.calls[0]!.reject(authErr(401));
-  t2.calls[1]!.reject(authErr(401));
-  await flush();
   expect(second.getSnapshot().pauseReason).toBe('auth');
-  expect(onAuthLost).toHaveBeenCalledTimes(1);
-  expect(await storage.list()).toHaveLength(2);
+  expect(second.getSnapshot().items.map((i) => i.uri).sort()).toEqual([file(1).uri, file(2).uri]);
   await jest.advanceTimersByTimeAsync(120000);
-  expect(t2.calls).toHaveLength(2);
+  expect(t2.calls).toHaveLength(0);
+  expect(onAuthLost).not.toHaveBeenCalled();
   second.resume();
   await flush();
-  expect(t2.calls).toHaveLength(4);
-  expect(t2.calls.slice(2).map((c) => c.options.client_ref).sort()).toEqual(t2.calls.slice(0, 2).map((c) => c.options.client_ref).sort());
-  expect(t2.calls[2]!.options.client_ref === queued.client_ref || t2.calls[3]!.options.client_ref === queued.client_ref).toBe(true);
-  t2.calls[2]!.resolve();
-  t2.calls[3]!.resolve();
+  expect(t2.calls).toHaveLength(2);
+  expect(t2.calls.map((c) => c.options.client_ref).sort()).toEqual([...(await second.getSnapshot().items.map((i) => i.client_ref))].sort());
+  expect(t2.calls.some((c) => c.options.client_ref === queued.client_ref)).toBe(true);
+  t2.calls[0]!.resolve();
+  t2.calls[1]!.resolve();
   await flush();
   expect(second.getSnapshot().items.map((i) => i.state)).toEqual(['done', 'done']);
   expect(await storage.list()).toEqual([]);
@@ -231,7 +227,7 @@ test('a 401 while manually paused upgrades the pause to auth and still keeps ite
   t.calls[0]!.reject(authErr(401));
   await flush();
   expect(ob.getSnapshot().pauseReason).toBe('auth');
-  expect(await storage.list()).toHaveLength(1);
+  expect(await queueKeys(storage)).toHaveLength(1);
 });
 
 test('limits concurrency to 3 and starts the next as slots free', async () => {

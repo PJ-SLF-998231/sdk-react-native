@@ -6,7 +6,7 @@ import type { ShelfClient } from '../core/client';
 import { getDefaultConnectivity } from './connectivity';
 import type { ConnectivitySource } from './connectivity';
 import { createOutbox } from './outbox';
-import type { EnqueueInput, Outbox, OutboxOptions, OutboxSnapshot } from './outbox';
+import type { EnqueueInput, Outbox, OutboxOptions, OutboxPauseReason, OutboxSnapshot } from './outbox';
 
 export interface UseOutboxOptions extends ShelfConnectionProps {
   /** Use this outbox instead of the shared one for the client (e.g. from createOutbox()). */
@@ -31,23 +31,61 @@ export interface OutboxControls {
   clearDone: () => void;
   pause: () => void;
   resume: () => void;
+  /** Why the queue is paused ('auth' = "Needs sign-in", 'not_configured' = "Not connected", 'manual'), or null. Known right after a restart. */
+  pausedReason: OutboxPauseReason | null;
+  /** One probe item now, whatever the credential fingerprint; see Outbox.retryNow(). */
+  retryNow: () => void;
 }
 
 // One outbox per (client, storage, scope), so every screen sees the same queue and a screen unmounting never stops
-// uploads. Not destroyed on unmount; it is collected with its client.
-const registry = new WeakMap<ShelfClient, WeakMap<object, Map<string, Outbox>>>();
+// uploads while another screen still uses it. Reference-counted: the outbox is destroyed (timers, connectivity and
+// episode subscriptions, clearAll registration) when the last useOutbox user unmounts, and a later mount builds a new
+// one that reloads the persisted queue. The destroy is deferred one microtask so a StrictMode unmount/remount or a
+// dependency change that moves to the same outbox does not destroy it.
+interface SharedEntry {
+  outbox: Outbox;
+  refs: number;
+  remove: () => void;
+}
+const registry = new WeakMap<ShelfClient, WeakMap<object, Map<string, SharedEntry>>>();
 const NO_STORAGE: object = {};
 
-function sharedOutbox(client: ShelfClient, storage: StorageAdapter | undefined, scope: string | undefined, rest: Omit<OutboxOptions, 'client' | 'storage' | 'scope'>): Outbox {
+function sharedEntry(client: ShelfClient, storage: StorageAdapter | undefined, scope: string | undefined, rest: Omit<OutboxOptions, 'client' | 'storage' | 'scope'>): SharedEntry {
   let byStorage = registry.get(client);
   if (!byStorage) registry.set(client, (byStorage = new WeakMap()));
   const sKey = storage ?? NO_STORAGE;
   let byScope = byStorage.get(sKey);
   if (!byScope) byStorage.set(sKey, (byScope = new Map()));
   const k = scope ?? '';
-  let ob = byScope.get(k);
-  if (!ob) byScope.set(k, (ob = createOutbox({ client, storage, scope, ...rest })));
-  return ob;
+  let entry = byScope.get(k);
+  if (!entry) {
+    const scopes = byScope;
+    const created: SharedEntry = {
+      outbox: createOutbox({ client, storage, scope, ...rest }),
+      refs: 0,
+      remove: () => {
+        if (scopes.get(k) === created) scopes.delete(k);
+      },
+    };
+    scopes.set(k, (entry = created));
+  }
+  return entry;
+}
+
+function acquire(entry: SharedEntry): () => void {
+  entry.refs++;
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    entry.refs--;
+    if (entry.refs > 0) return;
+    void Promise.resolve().then(() => {
+      if (entry.refs > 0) return;
+      entry.remove();
+      entry.outbox.destroy();
+    });
+  };
 }
 
 /**
@@ -60,11 +98,13 @@ export function useOutbox(options: UseOutboxOptions = {}): OutboxControls {
   const { outbox: given, scope, concurrency, backoff, maxAttempts, connectivity, upload } = options;
   const storage = options.storage ?? ctx.storage;
   const qScope = scope ?? options.cacheScope ?? ctx.scope;
-  const outbox = useMemo(
-    () => given ?? sharedOutbox(ctx.client, storage, qScope, { concurrency, backoff, maxAttempts, connectivity, upload }),
+  const entry = useMemo(
+    () => (given ? null : sharedEntry(ctx.client, storage, qScope, { concurrency, backoff, maxAttempts, connectivity, upload })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [given, ctx.client, storage, qScope],
   );
+  useEffect(() => (entry ? acquire(entry) : undefined), [entry]);
+  const outbox = given ?? (entry as SharedEntry).outbox;
   const snapshot = useSyncExternalStore(outbox.subscribe, outbox.getSnapshot, outbox.getSnapshot);
   return useMemo(
     () => ({
@@ -78,6 +118,8 @@ export function useOutbox(options: UseOutboxOptions = {}): OutboxControls {
       clearDone: () => outbox.clearDone(),
       pause: () => outbox.pause(),
       resume: () => outbox.resume(),
+      pausedReason: snapshot.pauseReason,
+      retryNow: () => outbox.retryNow(),
     }),
     [outbox, snapshot],
   );

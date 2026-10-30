@@ -206,9 +206,30 @@ stops draining and pauses: `snapshot.paused` is true and `snapshot.pauseReason` 
 or `'not_configured'` (label "Not connected"); `'manual'` is your own `pause()`. Every unsent item stays in memory and in
 storage, with its file URI and `client_ref`; running uploads are aborted and go back to pending. `onAuthLost` fires once
 for the episode, not once per item. `UploadStatusBadge paused={snapshot.pauseReason}` and
-`OfflineBanner pauseReason={snapshot.pauseReason} pendingCount={...}` show it. The pause is not persisted: after an app
-restart the queue loads all items and the first attempt either works (valid token) or pauses again, so nothing is lost
-and nothing is stuck.
+`OfflineBanner pauseReason={snapshot.pauseReason} pendingCount={...}` show it. `useOutbox()` also gives you `pausedReason` (the same value) and `retryNow()`.
+
+**The pause survives an app restart.** An `'auth'` / `'not_configured'` pause is saved in the same `storage` as the queue
+(key `shelf:outbox:v1:<hash(scope)>:~pause`): the reason, when it began, and a **fingerprint** of the headers in use when
+the credential was refused (16 hex characters of a SHA-256; the credential itself is never stored or logged). After a
+restart the outbox is paused as soon as it is ready, so the UI shows "Needs sign-in" / "Not connected" at once and the queue is
+intact; nothing is sent yet. It then calls `getHeaders` once and compares fingerprints:
+
+| At startup | What happens |
+|---|---|
+| Different fingerprint (the credential was refreshed) | ONE queued item is sent as a probe. Success: the pause ends and the rest drains (each file once, same `client_ref`). 401 / `not_configured`: the queue stays paused and `onAuthLost` does **not** fire again; a refusal after a later successful request is a new episode and does. |
+| Same fingerprint | Stays paused until you call `resume()`, `retryNow()`, or the credential changes. |
+| `getHeaders` throws, or the device is offline | Stays paused, no crash, no `onAuthLost`. (Offline: the probe goes out once the network is back.) |
+
+`retryNow()` sends one probe item whatever the fingerprint says (use it for a "Try again" button); `resume()` lifts the pause and
+drains everything. With nothing queued there is nothing to probe, so a different credential (or `retryNow()`) simply lifts
+the pause. The saved pause is deleted when the pause ends and by `clearAll()`. A manual `pause()` is not persisted. Queues
+saved by an earlier version have no pause record and behave as before (the first attempt pauses again if refused).
+Without a persistent `storage` nothing survives a restart, pause included.
+
+The outboxes `useOutbox()` shares per client, storage and scope are reference counted: the last screen to unmount destroys the
+outbox (timers, connectivity and `clearAll` registration), and the next mount builds a new one that reloads the saved queue.
+Uploads therefore keep running while any screen uses the outbox, not after all of them are gone; create your own with
+`createOutbox()` (and keep it) for uploads that must outlive the UI. `clearAll()` holds live outboxes weakly.
 
 To continue, fix the credential (the user signs in again, or the key is restored on your proxy), then call
 `resume()` (from `useOutbox()` / `useUpload()` / the outbox). `getHeaders` runs before every request, so a refreshed
@@ -401,7 +422,8 @@ proxy's 503 `not_configured`. The host's `onAuthLost` is called **once**, not on
   the hooks together. A callback function passed to several of them is called once; distinct callbacks are called once each.
   Share the client itself: a copy (`{ ...client }`) is a different client with its own episode.
 - "Different credential" is decided by a **fingerprint** of what `getHeaders` returns: SHA-256 over the header names and
-  values, truncated to 64 bits (16 hex chars). The credential is never stored or logged; only the fingerprint is kept, in memory.
+  values, truncated to 64 bits (16 hex chars). The credential is never stored or logged; the fingerprint is kept in memory and,
+  for a paused outbox, in storage next to the queue (see the persisted pause above).
 
 ```ts
 import { getAuthSession, credentialFingerprint } from '@pj-slf-998231/sdk-react-native';
@@ -415,7 +437,8 @@ session.resume();                                       // the host fixed the cr
 credentialFingerprint({ Authorization: token });        // 16 hex chars, non-reversible
 ```
 
-The outbox pause is not persisted yet; a restart begins with no open episode.
+A restart while the outbox is paused reopens the episode silently (`session.restoreEpisode`): the host was already told, so a
+refused probe after a restart does not call `onAuthLost` again.
 
 ## Theme
 
@@ -486,7 +509,7 @@ missing and Metro could not treat it as optional. Install that peer, or open an 
 key was refused or revoked. The SDK purges its cached data, pauses the queue (`pauseReason` `'auth'` or
 `'not_configured'`) and calls `onAuthLost` once per episode (see [One onAuthLost per episode](#one-onauthlost-per-episode)). **Queued, unsent files are kept**, in memory and in storage; no file is
 lost. Fix the credential (sign in again, or restore the key on the server), then call `resume()` (from `useOutbox()` /
-`useUpload()`) and the kept files upload, each once. Only `clearAll()` on sign-out discards them. Your own proxy
+`useUpload()`) and the kept files upload, each once. Only `clearAll()` on sign-out discards them. The pause itself survives an app restart (the UI shows it at once; see the persisted pause above). Your own proxy
 should return 401 only for an expired app session (refresh the token in `getHeaders` and retry) and never for a problem
 with the Shelf key.
 

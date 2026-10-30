@@ -85,6 +85,8 @@ export function createShelfClient(options: ShelfClientOptions): ShelfClient {
     return { headers: { ...extra, ...fromHost, Accept: accept }, fingerprint };
   }
 
+  session.setCredentialReader(async () => credentialFingerprint(options.getHeaders ? await options.getHeaders() : {}));
+
   async function authHeaders(accept: string, extra?: HeadersLike): Promise<HeadersLike> {
     return (await resolveHeaders(accept, extra)).headers;
   }
