@@ -1,0 +1,37 @@
+{
+ "version": 1,
+ "generated_at": "2026-10-08T09:00:04Z",
+ "source": {
+  "text_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "parser_id": null,
+  "parser_revision": null
+ },
+ "blocks": [
+  {
+   "type": "table",
+   "props": {
+    "columns": [
+     "Item",
+     "Qty",
+     "Price"
+    ],
+    "rows": [
+     [
+      "Consulting",
+      "10",
+      "100.00"
+     ],
+     [
+      "Travel",
+      "",
+      "83.04"
+     ]
+    ],
+    "source": {
+     "page": 1,
+     "line": 12
+    }
+   }
+  }
+ ]
+}

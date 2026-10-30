@@ -1,0 +1,414 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`OfflineBanner snapshots and visibility: offline with pending 1`] = `
+<View
+  accessibilityRole="alert"
+  style={
+    [
+      {
+        "borderWidth": 1,
+        "overflow": "hidden",
+      },
+      {
+        "backgroundColor": "#f7f7f6",
+        "borderColor": "rgba(20, 20, 15, 0.12)",
+        "borderRadius": 10,
+        "paddingLeft": 19,
+        "paddingRight": 16,
+        "paddingVertical": 12,
+      },
+      undefined,
+    ]
+  }
+>
+  <View
+    style={
+      [
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "top": 0,
+          "width": 3,
+        },
+        {
+          "backgroundColor": "#866300",
+        },
+      ]
+    }
+  />
+  <Text
+    style={
+      {
+        "color": "#14140f",
+        "fontFamily": undefined,
+        "fontSize": 14,
+      }
+    }
+  >
+    You are offline. 3 uploads will continue when you reconnect.
+  </Text>
+</View>
+`;
+
+exports[`OfflineBanner snapshots and visibility: paused auth 1`] = `
+<View
+  accessibilityRole="alert"
+  style={
+    [
+      {
+        "borderWidth": 1,
+        "overflow": "hidden",
+      },
+      {
+        "backgroundColor": "#1a1a17",
+        "borderColor": "rgba(255, 255, 255, 0.12)",
+        "borderRadius": 10,
+        "paddingLeft": 19,
+        "paddingRight": 16,
+        "paddingVertical": 12,
+      },
+      undefined,
+    ]
+  }
+>
+  <View
+    style={
+      [
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "top": 0,
+          "width": 3,
+        },
+        {
+          "backgroundColor": "#f87171",
+        },
+      ]
+    }
+  />
+  <Text
+    style={
+      {
+        "color": "#f3f2ea",
+        "fontFamily": undefined,
+        "fontSize": 14,
+      }
+    }
+  >
+    Uploads are paused because the connection to Shelf is no longer authorised.
+  </Text>
+</View>
+`;
+
+exports[`UploadStatusBadge snapshots 1`] = `
+[
+  <View
+    accessibilityLabel="Upload: Waiting"
+    style={
+      [
+        {
+          "alignItems": "center",
+          "alignSelf": "flex-start",
+          "borderRadius": 999,
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "gap": 6,
+        },
+        {
+          "backgroundColor": "#f7f7f6",
+          "borderColor": "#866300",
+          "borderStyle": "dashed",
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "borderRadius": 3,
+            "height": 6,
+            "width": 6,
+          },
+          {
+            "backgroundColor": "#866300",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        {
+          "color": "#866300",
+          "fontFamily": undefined,
+          "fontSize": 12,
+          "letterSpacing": 0.6,
+          "textTransform": "uppercase",
+        }
+      }
+    >
+      Waiting
+    </Text>
+  </View>,
+  <View
+    accessibilityLabel="Upload: Retrying"
+    style={
+      [
+        {
+          "alignItems": "center",
+          "alignSelf": "flex-start",
+          "borderRadius": 999,
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "gap": 6,
+        },
+        {
+          "backgroundColor": "#f7f7f6",
+          "borderColor": "#866300",
+          "borderStyle": "dashed",
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "borderRadius": 3,
+            "height": 6,
+            "width": 6,
+          },
+          {
+            "backgroundColor": "#866300",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        {
+          "color": "#866300",
+          "fontFamily": undefined,
+          "fontSize": 12,
+          "letterSpacing": 0.6,
+          "textTransform": "uppercase",
+        }
+      }
+    >
+      Retrying
+    </Text>
+  </View>,
+  <View
+    accessibilityLabel="Upload: Uploading 42%"
+    style={
+      [
+        {
+          "alignItems": "center",
+          "alignSelf": "flex-start",
+          "borderRadius": 999,
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "gap": 6,
+        },
+        {
+          "backgroundColor": "#ffffff",
+          "borderColor": "#eab308",
+          "borderStyle": "solid",
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "borderRadius": 3,
+            "height": 6,
+            "width": 6,
+          },
+          {
+            "backgroundColor": "#866300",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        {
+          "color": "#866300",
+          "fontFamily": undefined,
+          "fontSize": 12,
+          "letterSpacing": 0.6,
+          "textTransform": "uppercase",
+        }
+      }
+    >
+      Uploading 42%
+    </Text>
+  </View>,
+  <View
+    accessibilityLabel="Upload: Uploaded"
+    style={
+      [
+        {
+          "alignItems": "center",
+          "alignSelf": "flex-start",
+          "borderRadius": 999,
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "gap": 6,
+        },
+        {
+          "backgroundColor": "#ffffff",
+          "borderColor": "#eab308",
+          "borderStyle": "solid",
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "borderRadius": 3,
+            "height": 6,
+            "width": 6,
+          },
+          {
+            "backgroundColor": "#866300",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        {
+          "color": "#866300",
+          "fontFamily": undefined,
+          "fontSize": 12,
+          "letterSpacing": 0.6,
+          "textTransform": "uppercase",
+        }
+      }
+    >
+      Uploaded
+    </Text>
+  </View>,
+  <View
+    accessibilityLabel="Upload: Failed"
+    style={
+      [
+        {
+          "alignItems": "center",
+          "alignSelf": "flex-start",
+          "borderRadius": 999,
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "gap": 6,
+        },
+        {
+          "backgroundColor": "#ffffff",
+          "borderColor": "#b91c1c",
+          "borderStyle": "solid",
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "borderRadius": 3,
+            "height": 6,
+            "width": 6,
+          },
+          {
+            "backgroundColor": "#b91c1c",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        {
+          "color": "#b91c1c",
+          "fontFamily": undefined,
+          "fontSize": 12,
+          "letterSpacing": 0.6,
+          "textTransform": "uppercase",
+        }
+      }
+    >
+      Failed
+    </Text>
+  </View>,
+  <View
+    accessibilityLabel="Upload: Failed"
+    style={
+      [
+        {
+          "alignItems": "center",
+          "alignSelf": "flex-start",
+          "borderRadius": 999,
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "gap": 6,
+        },
+        {
+          "backgroundColor": "#121210",
+          "borderColor": "#f87171",
+          "borderStyle": "solid",
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "borderRadius": 3,
+            "height": 6,
+            "width": 6,
+          },
+          {
+            "backgroundColor": "#f87171",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        {
+          "color": "#f87171",
+          "fontFamily": undefined,
+          "fontSize": 12,
+          "letterSpacing": 0.6,
+          "textTransform": "uppercase",
+        }
+      }
+    >
+      Failed
+    </Text>
+  </View>,
+]
+`;

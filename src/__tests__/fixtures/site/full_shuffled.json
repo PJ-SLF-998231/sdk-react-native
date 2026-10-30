@@ -1,0 +1,148 @@
+{
+ "version": 1,
+ "generated_at": "2026-10-08T09:00:04Z",
+ "source": {
+  "text_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "parser_id": null,
+  "parser_revision": null
+ },
+ "blocks": [
+  {
+   "type": "source",
+   "props": {
+    "pages": 2,
+    "note": "Built from the document's text."
+   }
+  },
+  {
+   "type": "table",
+   "props": {
+    "columns": [
+     "Item",
+     "Qty",
+     "Price"
+    ],
+    "rows": [
+     [
+      "Consulting",
+      "10",
+      "100.00"
+     ],
+     [
+      "Travel",
+      "",
+      "83.04"
+     ]
+    ],
+    "source": {
+     "page": 1,
+     "line": 12
+    }
+   }
+  },
+  {
+   "type": "timeline",
+   "props": {
+    "items": [
+     {
+      "date": "2026-10-08",
+      "label": "Issued",
+      "source": {
+       "page": 1,
+       "line": 12
+      }
+     },
+     {
+      "date": "2026-11",
+      "label": "Due month"
+     },
+     {
+      "date": "2026",
+      "label": "Fiscal year"
+     }
+    ]
+   }
+  },
+  {
+   "type": "parties",
+   "props": {
+    "from": {
+     "name": "Acme Ltd",
+     "lines": [
+      "1 Main Rd",
+      "Cape Town"
+     ],
+     "source": {
+      "page": 1,
+      "line": 12
+     }
+    },
+    "to": {
+     "name": "Jo Bloggs"
+    }
+   }
+  },
+  {
+   "type": "amount",
+   "props": {
+    "label": "Amount due",
+    "value": "1245.50",
+    "currency": "ZAR",
+    "source": {
+     "page": 1,
+     "line": 12
+    },
+    "totals": [
+     {
+      "label": "Subtotal",
+      "value": "1083.04",
+      "currency": "ZAR"
+     },
+     {
+      "label": "Discount",
+      "value": "-3",
+      "currency": "ZAR"
+     }
+    ]
+   }
+  },
+  {
+   "type": "key_facts",
+   "props": {
+    "items": [
+     {
+      "label": "Invoice number",
+      "value": "INV-204",
+      "source": {
+       "page": 1,
+       "line": 12
+      }
+     },
+     {
+      "label": "PO",
+      "value": "PO-9"
+     }
+    ]
+   }
+  },
+  {
+   "type": "summary",
+   "props": {
+    "text": "Invoice for October consulting, due 2026-11-07. See https://pay.example.com/inv-204 to pay.",
+    "source": {
+     "page": 1,
+     "line": 12
+    }
+   }
+  },
+  {
+   "type": "hero",
+   "props": {
+    "title": "Invoice INV-204 from Acme",
+    "kind": "Invoice",
+    "issuer": "Acme Ltd",
+    "date": "2026-10-08"
+   }
+  }
+ ]
+}

@@ -1,0 +1,35 @@
+{
+ "version": 1,
+ "generated_at": "2026-10-08T09:00:04Z",
+ "source": {
+  "text_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "parser_id": null,
+  "parser_revision": null
+ },
+ "blocks": [
+  {
+   "type": "amount",
+   "props": {
+    "label": "Amount due",
+    "value": "1245.50",
+    "currency": "ZAR",
+    "source": {
+     "page": 1,
+     "line": 12
+    },
+    "totals": [
+     {
+      "label": "Subtotal",
+      "value": "1083.04",
+      "currency": "ZAR"
+     },
+     {
+      "label": "Discount",
+      "value": "-3",
+      "currency": "ZAR"
+     }
+    ]
+   }
+  }
+ ]
+}

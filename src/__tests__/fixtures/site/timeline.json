@@ -1,0 +1,34 @@
+{
+ "version": 1,
+ "generated_at": "2026-10-08T09:00:04Z",
+ "source": {
+  "text_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "parser_id": null,
+  "parser_revision": null
+ },
+ "blocks": [
+  {
+   "type": "timeline",
+   "props": {
+    "items": [
+     {
+      "date": "2026-10-08",
+      "label": "Issued",
+      "source": {
+       "page": 1,
+       "line": 12
+      }
+     },
+     {
+      "date": "2026-11",
+      "label": "Due month"
+     },
+     {
+      "date": "2026",
+      "label": "Fiscal year"
+     }
+    ]
+   }
+  }
+ ]
+}

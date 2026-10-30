@@ -1,0 +1,2115 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`site spec: one fixture per block type amount renders and matches its snapshot 1`] = `
+<RCTScrollView
+  contentContainerStyle={
+    {
+      "paddingBottom": 24,
+    }
+  }
+  testID="site-view"
+>
+  <View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-amount"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Amount due
+      </Text>
+      <View
+        style={
+          {
+            "alignItems": "baseline",
+            "flexDirection": "row",
+            "justifyContent": "space-between",
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "flexShrink": 1,
+              "fontFamily": undefined,
+              "fontSize": 14,
+            }
+          }
+        >
+          Total
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 28,
+              "fontWeight": "600",
+              "marginLeft": 12,
+            }
+          }
+        >
+          ZAR 1,245.50
+        </Text>
+      </View>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "marginTop": 2,
+          }
+        }
+      >
+        Page 1 · Line 12
+      </Text>
+      <View>
+        <View
+          style={
+            {
+              "alignItems": "baseline",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#6e6d64",
+                "flexShrink": 1,
+                "fontFamily": undefined,
+                "fontSize": 14,
+              }
+            }
+          >
+            Subtotal
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#14140f",
+                "fontFamily": undefined,
+                "fontSize": 16,
+                "fontWeight": "400",
+                "marginLeft": 12,
+              }
+            }
+          >
+            ZAR 1,083.04
+          </Text>
+        </View>
+      </View>
+      <View>
+        <View
+          style={
+            {
+              "alignItems": "baseline",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#6e6d64",
+                "flexShrink": 1,
+                "fontFamily": undefined,
+                "fontSize": 14,
+              }
+            }
+          >
+            Discount
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#14140f",
+                "fontFamily": undefined,
+                "fontSize": 16,
+                "fontWeight": "400",
+                "marginLeft": 12,
+              }
+            }
+          >
+            ZAR −3
+          </Text>
+        </View>
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`site spec: one fixture per block type blocks are laid out in the fixed order whatever the spec order 1`] = `
+<RCTScrollView
+  contentContainerStyle={
+    {
+      "paddingBottom": 24,
+    }
+  }
+  testID="site-view"
+>
+  <View>
+    <View
+      style={
+        {
+          "padding": 16,
+        }
+      }
+      testID="site-hero"
+    >
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Invoice
+      </Text>
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#14140f",
+            "fontFamily": undefined,
+            "fontSize": 28,
+            "fontWeight": "600",
+            "marginTop": 4,
+          }
+        }
+      >
+        Invoice INV-204 from Acme
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 14,
+            "marginTop": 4,
+          }
+        }
+      >
+        Acme Ltd · 8 Oct 2026
+      </Text>
+    </View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-summary"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Summary
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#14140f",
+            "fontFamily": undefined,
+            "fontSize": 16,
+            "fontWeight": "400",
+          }
+        }
+      >
+        Invoice for October consulting, due 2026-11-07. See 
+        <Text
+          accessibilityRole="link"
+          onPress={[Function]}
+          style={
+            {
+              "color": "#866300",
+              "textDecorationLine": "underline",
+            }
+          }
+        >
+          https://pay.example.com/inv-204
+        </Text>
+         to pay.
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "marginTop": 2,
+          }
+        }
+      >
+        Page 1 · Line 12
+      </Text>
+    </View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-key-facts"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Key facts
+      </Text>
+      <View
+        style={
+          {
+            "marginBottom": 12,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+            }
+          }
+        >
+          Invoice number
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+              "fontWeight": "400",
+            }
+          }
+        >
+          INV-204
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+              "marginTop": 2,
+            }
+          }
+        >
+          Page 1 · Line 12
+        </Text>
+      </View>
+      <View
+        style={
+          {
+            "marginBottom": 12,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+            }
+          }
+        >
+          PO
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+              "fontWeight": "400",
+            }
+          }
+        >
+          PO-9
+        </Text>
+      </View>
+    </View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-amount"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Amount due
+      </Text>
+      <View
+        style={
+          {
+            "alignItems": "baseline",
+            "flexDirection": "row",
+            "justifyContent": "space-between",
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "flexShrink": 1,
+              "fontFamily": undefined,
+              "fontSize": 14,
+            }
+          }
+        >
+          Total
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 28,
+              "fontWeight": "600",
+              "marginLeft": 12,
+            }
+          }
+        >
+          ZAR 1,245.50
+        </Text>
+      </View>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "marginTop": 2,
+          }
+        }
+      >
+        Page 1 · Line 12
+      </Text>
+      <View>
+        <View
+          style={
+            {
+              "alignItems": "baseline",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#6e6d64",
+                "flexShrink": 1,
+                "fontFamily": undefined,
+                "fontSize": 14,
+              }
+            }
+          >
+            Subtotal
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#14140f",
+                "fontFamily": undefined,
+                "fontSize": 16,
+                "fontWeight": "400",
+                "marginLeft": 12,
+              }
+            }
+          >
+            ZAR 1,083.04
+          </Text>
+        </View>
+      </View>
+      <View>
+        <View
+          style={
+            {
+              "alignItems": "baseline",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#6e6d64",
+                "flexShrink": 1,
+                "fontFamily": undefined,
+                "fontSize": 14,
+              }
+            }
+          >
+            Discount
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#14140f",
+                "fontFamily": undefined,
+                "fontSize": 16,
+                "fontWeight": "400",
+                "marginLeft": 12,
+              }
+            }
+          >
+            ZAR −3
+          </Text>
+        </View>
+      </View>
+    </View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-parties"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Parties
+      </Text>
+      <View
+        style={
+          {
+            "marginBottom": 12,
+          }
+        }
+        testID="site-party-from"
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+            }
+          }
+        >
+          From
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+              "fontWeight": "600",
+            }
+          }
+        >
+          Acme Ltd
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+              "fontWeight": "400",
+            }
+          }
+        >
+          1 Main Rd
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+              "fontWeight": "400",
+            }
+          }
+        >
+          Cape Town
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+              "marginTop": 2,
+            }
+          }
+        >
+          Page 1 · Line 12
+        </Text>
+      </View>
+      <View
+        style={
+          {
+            "marginBottom": 12,
+          }
+        }
+        testID="site-party-to"
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+            }
+          }
+        >
+          To
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+              "fontWeight": "600",
+            }
+          }
+        >
+          Jo Bloggs
+        </Text>
+      </View>
+    </View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-timeline"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Timeline
+      </Text>
+      <View
+        style={
+          [
+            {
+              "flexDirection": "row",
+            },
+            {
+              "marginBottom": 8,
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 14,
+              "width": 104,
+            }
+          }
+        >
+          8 Oct 2026
+        </Text>
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#14140f",
+                "fontFamily": undefined,
+                "fontSize": 16,
+                "fontWeight": "400",
+              }
+            }
+          >
+            Issued
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#6e6d64",
+                "fontFamily": undefined,
+                "fontSize": 12,
+                "marginTop": 2,
+              }
+            }
+          >
+            Page 1 · Line 12
+          </Text>
+        </View>
+      </View>
+      <View
+        style={
+          [
+            {
+              "flexDirection": "row",
+            },
+            {
+              "marginBottom": 8,
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 14,
+              "width": 104,
+            }
+          }
+        >
+          Nov 2026
+        </Text>
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#14140f",
+                "fontFamily": undefined,
+                "fontSize": 16,
+                "fontWeight": "400",
+              }
+            }
+          >
+            Due month
+          </Text>
+        </View>
+      </View>
+      <View
+        style={
+          [
+            {
+              "flexDirection": "row",
+            },
+            {
+              "marginBottom": 8,
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 14,
+              "width": 104,
+            }
+          }
+        >
+          2026
+        </Text>
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#14140f",
+                "fontFamily": undefined,
+                "fontSize": 16,
+                "fontWeight": "400",
+              }
+            }
+          >
+            Fiscal year
+          </Text>
+        </View>
+      </View>
+    </View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-table"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Items
+      </Text>
+      <RCTScrollView
+        horizontal={true}
+        showsHorizontalScrollIndicator={true}
+      >
+        <View>
+          <View>
+            <View
+              style={
+                [
+                  {
+                    "borderBottomWidth": 0.5,
+                    "flexDirection": "row",
+                  },
+                  {
+                    "borderBottomColor": "rgba(20, 20, 15, 0.12)",
+                  },
+                ]
+              }
+            >
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#6e6d64",
+                      "fontFamily": undefined,
+                      "fontSize": 12,
+                      "fontWeight": "600",
+                    },
+                  ]
+                }
+              >
+                Item
+              </Text>
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#6e6d64",
+                      "fontFamily": undefined,
+                      "fontSize": 12,
+                      "fontWeight": "600",
+                    },
+                  ]
+                }
+              >
+                Qty
+              </Text>
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#6e6d64",
+                      "fontFamily": undefined,
+                      "fontSize": 12,
+                      "fontWeight": "600",
+                    },
+                  ]
+                }
+              >
+                Price
+              </Text>
+            </View>
+            <View
+              style={
+                [
+                  {
+                    "borderBottomWidth": 0.5,
+                    "flexDirection": "row",
+                  },
+                  {
+                    "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+                  },
+                ]
+              }
+            >
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#14140f",
+                      "fontFamily": undefined,
+                      "fontSize": 14,
+                    },
+                  ]
+                }
+              >
+                Consulting
+              </Text>
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#14140f",
+                      "fontFamily": undefined,
+                      "fontSize": 14,
+                    },
+                  ]
+                }
+              >
+                10
+              </Text>
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#14140f",
+                      "fontFamily": undefined,
+                      "fontSize": 14,
+                    },
+                  ]
+                }
+              >
+                100.00
+              </Text>
+            </View>
+            <View
+              style={
+                [
+                  {
+                    "borderBottomWidth": 0.5,
+                    "flexDirection": "row",
+                  },
+                  {
+                    "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+                  },
+                ]
+              }
+            >
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#14140f",
+                      "fontFamily": undefined,
+                      "fontSize": 14,
+                    },
+                  ]
+                }
+              >
+                Travel
+              </Text>
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#14140f",
+                      "fontFamily": undefined,
+                      "fontSize": 14,
+                    },
+                  ]
+                }
+              />
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#14140f",
+                      "fontFamily": undefined,
+                      "fontSize": 14,
+                    },
+                  ]
+                }
+              >
+                83.04
+              </Text>
+            </View>
+          </View>
+        </View>
+      </RCTScrollView>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "marginTop": 2,
+          }
+        }
+      >
+        Page 1 · Line 12
+      </Text>
+    </View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-source"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Source
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#14140f",
+            "fontFamily": undefined,
+            "fontSize": 16,
+            "fontWeight": "400",
+          }
+        }
+      >
+        Built from the document's text.
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "marginTop": 2,
+          }
+        }
+      >
+        2 pages
+      </Text>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`site spec: one fixture per block type hero renders and matches its snapshot 1`] = `
+<RCTScrollView
+  contentContainerStyle={
+    {
+      "paddingBottom": 24,
+    }
+  }
+  testID="site-view"
+>
+  <View>
+    <View
+      style={
+        {
+          "padding": 16,
+        }
+      }
+      testID="site-hero"
+    >
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Invoice
+      </Text>
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#14140f",
+            "fontFamily": undefined,
+            "fontSize": 28,
+            "fontWeight": "600",
+            "marginTop": 4,
+          }
+        }
+      >
+        Invoice INV-204 from Acme
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 14,
+            "marginTop": 4,
+          }
+        }
+      >
+        Acme Ltd · 8 Oct 2026
+      </Text>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`site spec: one fixture per block type key_facts renders and matches its snapshot 1`] = `
+<RCTScrollView
+  contentContainerStyle={
+    {
+      "paddingBottom": 24,
+    }
+  }
+  testID="site-view"
+>
+  <View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-key-facts"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Key facts
+      </Text>
+      <View
+        style={
+          {
+            "marginBottom": 12,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+            }
+          }
+        >
+          Invoice number
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+              "fontWeight": "400",
+            }
+          }
+        >
+          INV-204
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+              "marginTop": 2,
+            }
+          }
+        >
+          Page 1 · Line 12
+        </Text>
+      </View>
+      <View
+        style={
+          {
+            "marginBottom": 12,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+            }
+          }
+        >
+          PO
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+              "fontWeight": "400",
+            }
+          }
+        >
+          PO-9
+        </Text>
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`site spec: one fixture per block type parties renders and matches its snapshot 1`] = `
+<RCTScrollView
+  contentContainerStyle={
+    {
+      "paddingBottom": 24,
+    }
+  }
+  testID="site-view"
+>
+  <View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-parties"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Parties
+      </Text>
+      <View
+        style={
+          {
+            "marginBottom": 12,
+          }
+        }
+        testID="site-party-from"
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+            }
+          }
+        >
+          From
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+              "fontWeight": "600",
+            }
+          }
+        >
+          Acme Ltd
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+              "fontWeight": "400",
+            }
+          }
+        >
+          1 Main Rd
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+              "fontWeight": "400",
+            }
+          }
+        >
+          Cape Town
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+              "marginTop": 2,
+            }
+          }
+        >
+          Page 1 · Line 12
+        </Text>
+      </View>
+      <View
+        style={
+          {
+            "marginBottom": 12,
+          }
+        }
+        testID="site-party-to"
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+            }
+          }
+        >
+          To
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+              "fontWeight": "600",
+            }
+          }
+        >
+          Jo Bloggs
+        </Text>
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`site spec: one fixture per block type source renders and matches its snapshot 1`] = `
+<RCTScrollView
+  contentContainerStyle={
+    {
+      "paddingBottom": 24,
+    }
+  }
+  testID="site-view"
+>
+  <View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-source"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Source
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#14140f",
+            "fontFamily": undefined,
+            "fontSize": 16,
+            "fontWeight": "400",
+          }
+        }
+      >
+        Built from the document's text.
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "marginTop": 2,
+          }
+        }
+      >
+        2 pages
+      </Text>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`site spec: one fixture per block type summary renders and matches its snapshot 1`] = `
+<RCTScrollView
+  contentContainerStyle={
+    {
+      "paddingBottom": 24,
+    }
+  }
+  testID="site-view"
+>
+  <View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-summary"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Summary
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#14140f",
+            "fontFamily": undefined,
+            "fontSize": 16,
+            "fontWeight": "400",
+          }
+        }
+      >
+        Invoice for October consulting, due 2026-11-07. See 
+        <Text
+          accessibilityRole="link"
+          onPress={[Function]}
+          style={
+            {
+              "color": "#866300",
+              "textDecorationLine": "underline",
+            }
+          }
+        >
+          https://pay.example.com/inv-204
+        </Text>
+         to pay.
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "marginTop": 2,
+          }
+        }
+      >
+        Page 1 · Line 12
+      </Text>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`site spec: one fixture per block type table renders and matches its snapshot 1`] = `
+<RCTScrollView
+  contentContainerStyle={
+    {
+      "paddingBottom": 24,
+    }
+  }
+  testID="site-view"
+>
+  <View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-table"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Items
+      </Text>
+      <RCTScrollView
+        horizontal={true}
+        showsHorizontalScrollIndicator={true}
+      >
+        <View>
+          <View>
+            <View
+              style={
+                [
+                  {
+                    "borderBottomWidth": 0.5,
+                    "flexDirection": "row",
+                  },
+                  {
+                    "borderBottomColor": "rgba(20, 20, 15, 0.12)",
+                  },
+                ]
+              }
+            >
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#6e6d64",
+                      "fontFamily": undefined,
+                      "fontSize": 12,
+                      "fontWeight": "600",
+                    },
+                  ]
+                }
+              >
+                Item
+              </Text>
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#6e6d64",
+                      "fontFamily": undefined,
+                      "fontSize": 12,
+                      "fontWeight": "600",
+                    },
+                  ]
+                }
+              >
+                Qty
+              </Text>
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#6e6d64",
+                      "fontFamily": undefined,
+                      "fontSize": 12,
+                      "fontWeight": "600",
+                    },
+                  ]
+                }
+              >
+                Price
+              </Text>
+            </View>
+            <View
+              style={
+                [
+                  {
+                    "borderBottomWidth": 0.5,
+                    "flexDirection": "row",
+                  },
+                  {
+                    "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+                  },
+                ]
+              }
+            >
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#14140f",
+                      "fontFamily": undefined,
+                      "fontSize": 14,
+                    },
+                  ]
+                }
+              >
+                Consulting
+              </Text>
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#14140f",
+                      "fontFamily": undefined,
+                      "fontSize": 14,
+                    },
+                  ]
+                }
+              >
+                10
+              </Text>
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#14140f",
+                      "fontFamily": undefined,
+                      "fontSize": 14,
+                    },
+                  ]
+                }
+              >
+                100.00
+              </Text>
+            </View>
+            <View
+              style={
+                [
+                  {
+                    "borderBottomWidth": 0.5,
+                    "flexDirection": "row",
+                  },
+                  {
+                    "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+                  },
+                ]
+              }
+            >
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#14140f",
+                      "fontFamily": undefined,
+                      "fontSize": 14,
+                    },
+                  ]
+                }
+              >
+                Travel
+              </Text>
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#14140f",
+                      "fontFamily": undefined,
+                      "fontSize": 14,
+                    },
+                  ]
+                }
+              />
+              <Text
+                style={
+                  [
+                    {
+                      "paddingRight": 8,
+                      "paddingVertical": 6,
+                      "width": 128,
+                    },
+                    {
+                      "color": "#14140f",
+                      "fontFamily": undefined,
+                      "fontSize": 14,
+                    },
+                  ]
+                }
+              >
+                83.04
+              </Text>
+            </View>
+          </View>
+        </View>
+      </RCTScrollView>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "marginTop": 2,
+          }
+        }
+      >
+        Page 1 · Line 12
+      </Text>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`site spec: one fixture per block type timeline renders and matches its snapshot 1`] = `
+<RCTScrollView
+  contentContainerStyle={
+    {
+      "paddingBottom": 24,
+    }
+  }
+  testID="site-view"
+>
+  <View>
+    <View
+      style={
+        [
+          {
+            "borderTopWidth": 0.5,
+          },
+          {
+            "borderTopColor": "rgba(20, 20, 15, 0.07)",
+            "paddingHorizontal": 16,
+            "paddingVertical": 16,
+          },
+        ]
+      }
+      testID="site-timeline"
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "letterSpacing": 0.6,
+            "marginBottom": 8,
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Timeline
+      </Text>
+      <View
+        style={
+          [
+            {
+              "flexDirection": "row",
+            },
+            {
+              "marginBottom": 8,
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 14,
+              "width": 104,
+            }
+          }
+        >
+          8 Oct 2026
+        </Text>
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#14140f",
+                "fontFamily": undefined,
+                "fontSize": 16,
+                "fontWeight": "400",
+              }
+            }
+          >
+            Issued
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#6e6d64",
+                "fontFamily": undefined,
+                "fontSize": 12,
+                "marginTop": 2,
+              }
+            }
+          >
+            Page 1 · Line 12
+          </Text>
+        </View>
+      </View>
+      <View
+        style={
+          [
+            {
+              "flexDirection": "row",
+            },
+            {
+              "marginBottom": 8,
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 14,
+              "width": 104,
+            }
+          }
+        >
+          Nov 2026
+        </Text>
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#14140f",
+                "fontFamily": undefined,
+                "fontSize": 16,
+                "fontWeight": "400",
+              }
+            }
+          >
+            Due month
+          </Text>
+        </View>
+      </View>
+      <View
+        style={
+          [
+            {
+              "flexDirection": "row",
+            },
+            {
+              "marginBottom": 8,
+            },
+          ]
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 14,
+              "width": 104,
+            }
+          }
+        >
+          2026
+        </Text>
+        <View
+          style={
+            {
+              "flex": 1,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#14140f",
+                "fontFamily": undefined,
+                "fontSize": 16,
+                "fontWeight": "400",
+              }
+            }
+          >
+            Fiscal year
+          </Text>
+        </View>
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;

@@ -1,0 +1,46 @@
+{
+ "version": 1,
+ "generated_at": "2026-10-08T09:00:04Z",
+ "source": {
+  "text_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "parser_id": null,
+  "parser_revision": null
+ },
+ "blocks": [
+  {
+   "type": "hero",
+   "props": {
+    "title": "Invoice INV-204 from Acme",
+    "kind": "Invoice",
+    "issuer": "Acme Ltd",
+    "date": "2026-10-08"
+   }
+  },
+  {
+   "type": "table",
+   "props": {
+    "columns": [
+     "A"
+    ],
+    "rows": [
+     [
+      "x"
+     ]
+    ]
+   }
+  },
+  {
+   "type": "table",
+   "props": {
+    "columns": [
+     "A"
+    ],
+    "rows": [
+     [
+      "x"
+     ]
+    ]
+   }
+  }
+ ]
+}

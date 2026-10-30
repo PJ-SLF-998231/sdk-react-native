@@ -1,0 +1,2723 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DocumentList empty 1`] = `
+<View
+  accessibilityLiveRegion="polite"
+  style={
+    [
+      {
+        "alignItems": "center",
+        "justifyContent": "center",
+      },
+      {
+        "padding": 24,
+      },
+      undefined,
+    ]
+  }
+>
+  <Text
+    style={
+      {
+        "color": "#14140f",
+        "fontFamily": undefined,
+        "fontSize": 16,
+        "textAlign": "center",
+      }
+    }
+  >
+    No documents
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#6e6d64",
+        "fontFamily": undefined,
+        "fontSize": 14,
+        "marginTop": 4,
+        "textAlign": "center",
+      }
+    }
+  >
+    Documents you add will show up here.
+  </Text>
+</View>
+`;
+
+exports[`DocumentList error without cache offers retry; offline with cache keeps the rows and says so 1`] = `
+<View
+  accessibilityLiveRegion="polite"
+  accessibilityRole="alert"
+  style={
+    [
+      {
+        "alignItems": "center",
+        "justifyContent": "center",
+      },
+      {
+        "padding": 24,
+      },
+      undefined,
+    ]
+  }
+>
+  <Text
+    style={
+      {
+        "color": "#b91c1c",
+        "fontFamily": undefined,
+        "fontSize": 16,
+        "textAlign": "center",
+      }
+    }
+  >
+    Could not load documents
+  </Text>
+  <View
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "backgroundColor": "#eab308",
+        "borderRadius": 10,
+        "marginTop": 12,
+        "paddingHorizontal": 16,
+        "paddingVertical": 8,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#1c1500",
+          "fontFamily": undefined,
+          "fontSize": 14,
+        }
+      }
+    >
+      Try again
+    </Text>
+  </View>
+</View>
+`;
+
+exports[`DocumentList loading 1`] = `
+<View
+  accessibilityLiveRegion="polite"
+  style={
+    [
+      {
+        "alignItems": "center",
+        "justifyContent": "center",
+      },
+      {
+        "padding": 24,
+      },
+      undefined,
+    ]
+  }
+>
+  <ActivityIndicator
+    accessibilityLabel="Loading"
+    color="#866300"
+  />
+  <Text
+    style={
+      {
+        "color": "#14140f",
+        "fontFamily": undefined,
+        "fontSize": 16,
+        "textAlign": "center",
+      }
+    }
+  >
+    Loading documents
+  </Text>
+</View>
+`;
+
+exports[`DocumentList populated cards (grid) 1`] = `
+<RCTScrollView
+  ListFooterComponent={null}
+  contentContainerStyle={
+    [
+      {
+        "paddingHorizontal": 16,
+        "paddingTop": 12,
+      },
+      undefined,
+    ]
+  }
+  data={
+    [
+      {
+        "content_type": "application/pdf",
+        "created_at": "2026-01-01T00:00:00Z",
+        "edited_at": null,
+        "filename": "d1.pdf",
+        "folder_id": null,
+        "id": "d1",
+        "parse_status": "done",
+        "parsed_at": null,
+        "preview_sizes": [],
+        "size_bytes": 2048,
+      },
+      {
+        "content_type": "image/png",
+        "created_at": "2026-01-01T00:00:00Z",
+        "edited_at": null,
+        "filename": "scan.png",
+        "folder_id": null,
+        "id": "d2",
+        "parse_status": "processing",
+        "parsed_at": null,
+        "preview_sizes": [],
+        "size_bytes": 10,
+      },
+    ]
+  }
+  getItem={[Function]}
+  getItemCount={[Function]}
+  getItemLayout={[Function]}
+  initialNumToRender={5}
+  keyExtractor={[Function]}
+  maxToRenderPerBatch={10}
+  onContentSizeChange={[Function]}
+  onEndReachedThreshold={1.5}
+  onLayout={[Function]}
+  onMomentumScrollBegin={[Function]}
+  onMomentumScrollEnd={[Function]}
+  onRefresh={[Function]}
+  onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
+  onScrollEndDrag={[Function]}
+  refreshControl={
+    <RefreshControlMock
+      onRefresh={[Function]}
+      refreshing={false}
+    />
+  }
+  refreshing={false}
+  removeClippedSubviews={true}
+  renderItem={[Function]}
+  scrollEventThrottle={0.0001}
+  stickyHeaderIndices={[]}
+  updateCellsBatchingPeriod={50}
+  viewabilityConfigCallbackPairs={[]}
+  windowSize={7}
+>
+  <RCTRefreshControl />
+  <View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <View
+        style={
+          {
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "marginBottom": 12,
+              "marginRight": 12,
+              "width": 353,
+            }
+          }
+        >
+          <View
+            accessibilityLabel="d1.pdf"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              [
+                {
+                  "borderWidth": 0.5,
+                  "overflow": "hidden",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "borderColor": "rgba(20, 20, 15, 0.12)",
+                  "borderRadius": 10,
+                  "height": 200,
+                  "width": 353,
+                },
+                undefined,
+              ]
+            }
+          >
+            <View
+              accessibilityElementsHidden={true}
+              importantForAccessibility="no-hide-descendants"
+              style={
+                [
+                  {
+                    "alignItems": "center",
+                    "borderWidth": 0.5,
+                    "justifyContent": "center",
+                    "overflow": "hidden",
+                  },
+                  {
+                    "backgroundColor": "#f7f7f6",
+                    "borderColor": "rgba(20, 20, 15, 0.07)",
+                    "borderRadius": 6,
+                    "height": 132,
+                    "width": 351,
+                  },
+                  {
+                    "borderRadius": 0,
+                  },
+                ]
+              }
+            >
+              <Text
+                style={
+                  {
+                    "color": "#6e6d64",
+                    "fontFamily": undefined,
+                    "fontSize": 12,
+                  }
+                }
+              >
+                PDF
+              </Text>
+            </View>
+            <Text
+              numberOfLines={2}
+              style={
+                {
+                  "color": "#14140f",
+                  "fontFamily": undefined,
+                  "fontSize": 14,
+                  "margin": 8,
+                  "marginBottom": 0,
+                }
+              }
+            >
+              d1.pdf
+            </Text>
+            <Text
+              numberOfLines={1}
+              style={
+                {
+                  "color": "#6e6d64",
+                  "fontFamily": undefined,
+                  "fontSize": 12,
+                  "marginHorizontal": 8,
+                }
+              }
+            >
+              2 KB
+            </Text>
+          </View>
+        </View>
+        <View
+          style={
+            {
+              "marginBottom": 12,
+              "marginRight": 12,
+              "width": 353,
+            }
+          }
+        >
+          <View
+            accessibilityLabel="scan.png"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              [
+                {
+                  "borderWidth": 0.5,
+                  "overflow": "hidden",
+                },
+                {
+                  "backgroundColor": "#ffffff",
+                  "borderColor": "rgba(20, 20, 15, 0.12)",
+                  "borderRadius": 10,
+                  "height": 200,
+                  "width": 353,
+                },
+                undefined,
+              ]
+            }
+          >
+            <View
+              accessibilityElementsHidden={true}
+              importantForAccessibility="no-hide-descendants"
+              style={
+                [
+                  {
+                    "alignItems": "center",
+                    "borderWidth": 0.5,
+                    "justifyContent": "center",
+                    "overflow": "hidden",
+                  },
+                  {
+                    "backgroundColor": "#f7f7f6",
+                    "borderColor": "rgba(20, 20, 15, 0.07)",
+                    "borderRadius": 6,
+                    "height": 132,
+                    "width": 351,
+                  },
+                  {
+                    "borderRadius": 0,
+                  },
+                ]
+              }
+            >
+              <Text
+                style={
+                  {
+                    "color": "#6e6d64",
+                    "fontFamily": undefined,
+                    "fontSize": 12,
+                  }
+                }
+              >
+                PNG
+              </Text>
+            </View>
+            <Text
+              numberOfLines={2}
+              style={
+                {
+                  "color": "#14140f",
+                  "fontFamily": undefined,
+                  "fontSize": 14,
+                  "margin": 8,
+                  "marginBottom": 0,
+                }
+              }
+            >
+              scan.png
+            </Text>
+            <Text
+              numberOfLines={1}
+              style={
+                {
+                  "color": "#6e6d64",
+                  "fontFamily": undefined,
+                  "fontSize": 12,
+                  "marginHorizontal": 8,
+                }
+              }
+            >
+              10 B
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`DocumentList populated rows, press, and virtualisation props 1`] = `
+<RCTScrollView
+  ListFooterComponent={null}
+  contentContainerStyle={
+    [
+      null,
+      undefined,
+    ]
+  }
+  data={
+    [
+      {
+        "content_type": "application/pdf",
+        "created_at": "2026-01-01T00:00:00Z",
+        "edited_at": null,
+        "filename": "d1.pdf",
+        "folder_id": null,
+        "id": "d1",
+        "parse_status": "done",
+        "parsed_at": null,
+        "preview_sizes": [],
+        "size_bytes": 2048,
+      },
+      {
+        "content_type": "image/png",
+        "created_at": "2026-01-01T00:00:00Z",
+        "edited_at": null,
+        "filename": "scan.png",
+        "folder_id": null,
+        "id": "d2",
+        "parse_status": "processing",
+        "parsed_at": null,
+        "preview_sizes": [],
+        "size_bytes": 10,
+      },
+    ]
+  }
+  getItem={[Function]}
+  getItemCount={[Function]}
+  getItemLayout={[Function]}
+  initialNumToRender={10}
+  keyExtractor={[Function]}
+  maxToRenderPerBatch={10}
+  onContentSizeChange={[Function]}
+  onEndReachedThreshold={1.5}
+  onLayout={[Function]}
+  onMomentumScrollBegin={[Function]}
+  onMomentumScrollEnd={[Function]}
+  onRefresh={[Function]}
+  onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
+  onScrollEndDrag={[Function]}
+  refreshControl={
+    <RefreshControlMock
+      onRefresh={[Function]}
+      refreshing={false}
+    />
+  }
+  refreshing={false}
+  removeClippedSubviews={true}
+  renderItem={[Function]}
+  scrollEventThrottle={0.0001}
+  stickyHeaderIndices={[]}
+  updateCellsBatchingPeriod={50}
+  viewabilityConfigCallbackPairs={[]}
+  windowSize={7}
+>
+  <RCTRefreshControl />
+  <View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <View
+        accessibilityLabel="d1.pdf, 2 KB · 2026-01-01"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderBottomWidth": 0.5,
+              "flexDirection": "row",
+            },
+            {
+              "backgroundColor": "#ffffff",
+              "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+              "height": 72,
+              "paddingHorizontal": 16,
+            },
+            undefined,
+          ]
+        }
+      >
+        <View
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no-hide-descendants"
+          style={
+            [
+              {
+                "alignItems": "center",
+                "borderWidth": 0.5,
+                "justifyContent": "center",
+                "overflow": "hidden",
+              },
+              {
+                "backgroundColor": "#f7f7f6",
+                "borderColor": "rgba(20, 20, 15, 0.07)",
+                "borderRadius": 6,
+                "height": 48,
+                "width": 48,
+              },
+              undefined,
+            ]
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#6e6d64",
+                "fontFamily": undefined,
+                "fontSize": 12,
+              }
+            }
+          >
+            PDF
+          </Text>
+        </View>
+        <View
+          style={
+            [
+              {
+                "flex": 1,
+              },
+              {
+                "marginLeft": 12,
+              },
+            ]
+          }
+        >
+          <Text
+            numberOfLines={1}
+            style={
+              {
+                "color": "#14140f",
+                "fontFamily": undefined,
+                "fontSize": 16,
+              }
+            }
+          >
+            d1.pdf
+          </Text>
+          <Text
+            numberOfLines={1}
+            style={
+              {
+                "color": "#6e6d64",
+                "fontFamily": undefined,
+                "fontSize": 12,
+                "marginTop": 2,
+              }
+            }
+          >
+            2 KB · 2026-01-01
+          </Text>
+        </View>
+      </View>
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <View
+        accessibilityLabel="scan.png, 10 B · 2026-01-01 · Reading"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderBottomWidth": 0.5,
+              "flexDirection": "row",
+            },
+            {
+              "backgroundColor": "#ffffff",
+              "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+              "height": 72,
+              "paddingHorizontal": 16,
+            },
+            undefined,
+          ]
+        }
+      >
+        <View
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no-hide-descendants"
+          style={
+            [
+              {
+                "alignItems": "center",
+                "borderWidth": 0.5,
+                "justifyContent": "center",
+                "overflow": "hidden",
+              },
+              {
+                "backgroundColor": "#f7f7f6",
+                "borderColor": "rgba(20, 20, 15, 0.07)",
+                "borderRadius": 6,
+                "height": 48,
+                "width": 48,
+              },
+              undefined,
+            ]
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#6e6d64",
+                "fontFamily": undefined,
+                "fontSize": 12,
+              }
+            }
+          >
+            PNG
+          </Text>
+        </View>
+        <View
+          style={
+            [
+              {
+                "flex": 1,
+              },
+              {
+                "marginLeft": 12,
+              },
+            ]
+          }
+        >
+          <Text
+            numberOfLines={1}
+            style={
+              {
+                "color": "#14140f",
+                "fontFamily": undefined,
+                "fontSize": 16,
+              }
+            }
+          >
+            scan.png
+          </Text>
+          <Text
+            numberOfLines={1}
+            style={
+              {
+                "color": "#6e6d64",
+                "fontFamily": undefined,
+                "fontSize": 12,
+                "marginTop": 2,
+              }
+            }
+          >
+            10 B · 2026-01-01 · Reading
+          </Text>
+        </View>
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`DocumentRow / DocumentCard snapshots 1`] = `
+[
+  <View
+    accessibilityLabel="d1.pdf, 2 KB · 2026-01-01"
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      [
+        {
+          "alignItems": "center",
+          "borderBottomWidth": 0.5,
+          "flexDirection": "row",
+        },
+        {
+          "backgroundColor": "#ffffff",
+          "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+          "height": 72,
+          "paddingHorizontal": 16,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityElementsHidden={true}
+      importantForAccessibility="no-hide-descendants"
+      style={
+        [
+          {
+            "alignItems": "center",
+            "borderWidth": 0.5,
+            "justifyContent": "center",
+            "overflow": "hidden",
+          },
+          {
+            "backgroundColor": "#f7f7f6",
+            "borderColor": "rgba(20, 20, 15, 0.07)",
+            "borderRadius": 6,
+            "height": 48,
+            "width": 48,
+          },
+          undefined,
+        ]
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+          }
+        }
+      >
+        PDF
+      </Text>
+    </View>
+    <View
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          {
+            "marginLeft": 12,
+          },
+        ]
+      }
+    >
+      <Text
+        numberOfLines={1}
+        style={
+          {
+            "color": "#14140f",
+            "fontFamily": undefined,
+            "fontSize": 16,
+          }
+        }
+      >
+        d1.pdf
+      </Text>
+      <Text
+        numberOfLines={1}
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "marginTop": 2,
+          }
+        }
+      >
+        2 KB · 2026-01-01
+      </Text>
+    </View>
+  </View>,
+  <View
+    accessibilityLabel="scan.png, 10 B · 2026-01-01 · Reading"
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      [
+        {
+          "alignItems": "center",
+          "borderBottomWidth": 0.5,
+          "flexDirection": "row",
+        },
+        {
+          "backgroundColor": "#121210",
+          "borderBottomColor": "rgba(255, 255, 255, 0.07)",
+          "height": 72,
+          "paddingHorizontal": 16,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityElementsHidden={true}
+      importantForAccessibility="no-hide-descendants"
+      style={
+        [
+          {
+            "alignItems": "center",
+            "borderWidth": 0.5,
+            "justifyContent": "center",
+            "overflow": "hidden",
+          },
+          {
+            "backgroundColor": "#1a1a17",
+            "borderColor": "rgba(255, 255, 255, 0.07)",
+            "borderRadius": 6,
+            "height": 48,
+            "width": 48,
+          },
+          undefined,
+        ]
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#8e8d86",
+            "fontFamily": undefined,
+            "fontSize": 12,
+          }
+        }
+      >
+        PNG
+      </Text>
+    </View>
+    <View
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          {
+            "marginLeft": 12,
+          },
+        ]
+      }
+    >
+      <Text
+        numberOfLines={1}
+        style={
+          {
+            "color": "#f3f2ea",
+            "fontFamily": undefined,
+            "fontSize": 16,
+          }
+        }
+      >
+        scan.png
+      </Text>
+      <Text
+        numberOfLines={1}
+        style={
+          {
+            "color": "#8e8d86",
+            "fontFamily": undefined,
+            "fontSize": 12,
+            "marginTop": 2,
+          }
+        }
+      >
+        10 B · 2026-01-01 · Reading
+      </Text>
+    </View>
+  </View>,
+  <View
+    accessibilityLabel="d1.pdf"
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      [
+        {
+          "borderWidth": 0.5,
+          "overflow": "hidden",
+        },
+        {
+          "backgroundColor": "#ffffff",
+          "borderColor": "rgba(20, 20, 15, 0.12)",
+          "borderRadius": 10,
+          "height": 200,
+          "width": 150,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityElementsHidden={true}
+      importantForAccessibility="no-hide-descendants"
+      style={
+        [
+          {
+            "alignItems": "center",
+            "borderWidth": 0.5,
+            "justifyContent": "center",
+            "overflow": "hidden",
+          },
+          {
+            "backgroundColor": "#f7f7f6",
+            "borderColor": "rgba(20, 20, 15, 0.07)",
+            "borderRadius": 6,
+            "height": 132,
+            "width": 148,
+          },
+          {
+            "borderRadius": 0,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+          }
+        }
+      >
+        PDF
+      </Text>
+    </View>
+    <Text
+      numberOfLines={2}
+      style={
+        {
+          "color": "#14140f",
+          "fontFamily": undefined,
+          "fontSize": 14,
+          "margin": 8,
+          "marginBottom": 0,
+        }
+      }
+    >
+      d1.pdf
+    </Text>
+    <Text
+      numberOfLines={1}
+      style={
+        {
+          "color": "#6e6d64",
+          "fontFamily": undefined,
+          "fontSize": 12,
+          "marginHorizontal": 8,
+        }
+      }
+    >
+      2 KB
+    </Text>
+  </View>,
+  <View
+    accessibilityLabel="scan.png"
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      [
+        {
+          "borderWidth": 0.5,
+          "overflow": "hidden",
+        },
+        {
+          "backgroundColor": "#121210",
+          "borderColor": "rgba(255, 255, 255, 0.12)",
+          "borderRadius": 10,
+          "height": 200,
+          "width": 120,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityElementsHidden={true}
+      importantForAccessibility="no-hide-descendants"
+      style={
+        [
+          {
+            "alignItems": "center",
+            "borderWidth": 0.5,
+            "justifyContent": "center",
+            "overflow": "hidden",
+          },
+          {
+            "backgroundColor": "#1a1a17",
+            "borderColor": "rgba(255, 255, 255, 0.07)",
+            "borderRadius": 6,
+            "height": 132,
+            "width": 118,
+          },
+          {
+            "borderRadius": 0,
+          },
+        ]
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#8e8d86",
+            "fontFamily": undefined,
+            "fontSize": 12,
+          }
+        }
+      >
+        PNG
+      </Text>
+    </View>
+    <Text
+      numberOfLines={2}
+      style={
+        {
+          "color": "#f3f2ea",
+          "fontFamily": undefined,
+          "fontSize": 14,
+          "margin": 8,
+          "marginBottom": 0,
+        }
+      }
+    >
+      scan.png
+    </Text>
+    <Text
+      numberOfLines={1}
+      style={
+        {
+          "color": "#8e8d86",
+          "fontFamily": undefined,
+          "fontSize": 12,
+          "marginHorizontal": 8,
+        }
+      }
+    >
+      10 B
+    </Text>
+  </View>,
+]
+`;
+
+exports[`Folder pieces FolderBreadcrumb snapshot and navigation; the current crumb is not pressable 1`] = `
+<RCTScrollView
+  accessibilityRole="header"
+  contentContainerStyle={
+    [
+      {
+        "alignItems": "center",
+      },
+      {
+        "paddingHorizontal": 16,
+        "paddingVertical": 8,
+      },
+    ]
+  }
+  horizontal={true}
+  showsHorizontalScrollIndicator={false}
+>
+  <View>
+    <View
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": false,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      hitSlop={6}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+    >
+      <Text
+        style={
+          {
+            "color": "#866300",
+            "fontFamily": undefined,
+            "fontSize": 14,
+          }
+        }
+      >
+        All documents
+      </Text>
+    </View>
+    <Text
+      style={
+        {
+          "color": "#6e6d64",
+          "fontSize": 14,
+          "marginHorizontal": 4,
+        }
+      }
+    >
+      /
+    </Text>
+    <View
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": false,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      hitSlop={6}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+    >
+      <Text
+        style={
+          {
+            "color": "#866300",
+            "fontFamily": undefined,
+            "fontSize": 14,
+          }
+        }
+      >
+        Alpha
+      </Text>
+    </View>
+    <Text
+      style={
+        {
+          "color": "#6e6d64",
+          "fontSize": 14,
+          "marginHorizontal": 4,
+        }
+      }
+    >
+      /
+    </Text>
+    <View
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": true,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      hitSlop={6}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+    >
+      <Text
+        style={
+          {
+            "color": "#14140f",
+            "fontFamily": undefined,
+            "fontSize": 14,
+          }
+        }
+      >
+        Beta
+      </Text>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`Folder pieces FolderCard snapshots (plain, with write actions, dark) 1`] = `
+[
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "borderBottomWidth": 0.5,
+          "flexDirection": "row",
+        },
+        {
+          "backgroundColor": "#ffffff",
+          "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+          "height": 64,
+          "paddingHorizontal": 16,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityLabel="Alpha, 3 documents"
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "borderWidth": 1.5,
+            },
+            {
+              "backgroundColor": "#f7f7f6",
+              "borderColor": "#eab308",
+              "borderRadius": 6,
+              "height": 28,
+              "width": 36,
+            },
+          ]
+        }
+      />
+      <View
+        style={
+          [
+            {
+              "flex": 1,
+            },
+            {
+              "marginLeft": 12,
+            },
+          ]
+        }
+      >
+        <Text
+          numberOfLines={1}
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+            }
+          }
+        >
+          Alpha
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+              "marginTop": 2,
+            }
+          }
+        >
+          3 documents
+        </Text>
+      </View>
+    </View>
+  </View>,
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "borderBottomWidth": 0.5,
+          "flexDirection": "row",
+        },
+        {
+          "backgroundColor": "#ffffff",
+          "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+          "height": 64,
+          "paddingHorizontal": 16,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityLabel="Beta, 1 document"
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "borderWidth": 1.5,
+            },
+            {
+              "backgroundColor": "#f7f7f6",
+              "borderColor": "#eab308",
+              "borderRadius": 6,
+              "height": 28,
+              "width": 36,
+            },
+          ]
+        }
+      />
+      <View
+        style={
+          [
+            {
+              "flex": 1,
+            },
+            {
+              "marginLeft": 12,
+            },
+          ]
+        }
+      >
+        <Text
+          numberOfLines={1}
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 16,
+            }
+          }
+        >
+          Beta
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#6e6d64",
+              "fontFamily": undefined,
+              "fontSize": 12,
+              "marginTop": 2,
+            }
+          }
+        >
+          1 document
+        </Text>
+      </View>
+    </View>
+    <View
+      accessibilityLabel="Rename Beta"
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "padding": 8,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#866300",
+            "fontFamily": undefined,
+            "fontSize": 14,
+          }
+        }
+      >
+        Rename
+      </Text>
+    </View>
+    <View
+      accessibilityLabel="Delete Beta"
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "padding": 8,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#b91c1c",
+            "fontFamily": undefined,
+            "fontSize": 14,
+          }
+        }
+      >
+        Delete
+      </Text>
+    </View>
+  </View>,
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "borderBottomWidth": 0.5,
+          "flexDirection": "row",
+        },
+        {
+          "backgroundColor": "#121210",
+          "borderBottomColor": "rgba(255, 255, 255, 0.07)",
+          "height": 64,
+          "paddingHorizontal": 16,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      accessibilityLabel="Gamma, 0 documents"
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "borderWidth": 1.5,
+            },
+            {
+              "backgroundColor": "#1a1a17",
+              "borderColor": "#facc15",
+              "borderRadius": 6,
+              "height": 28,
+              "width": 36,
+            },
+          ]
+        }
+      />
+      <View
+        style={
+          [
+            {
+              "flex": 1,
+            },
+            {
+              "marginLeft": 12,
+            },
+          ]
+        }
+      >
+        <Text
+          numberOfLines={1}
+          style={
+            {
+              "color": "#f3f2ea",
+              "fontFamily": undefined,
+              "fontSize": 16,
+            }
+          }
+        >
+          Gamma
+        </Text>
+        <Text
+          style={
+            {
+              "color": "#8e8d86",
+              "fontFamily": undefined,
+              "fontSize": 12,
+              "marginTop": 2,
+            }
+          }
+        >
+          0 documents
+        </Text>
+      </View>
+    </View>
+  </View>,
+]
+`;
+
+exports[`Folder pieces FolderHeader: root, loading folder, loaded folder; "New folder" only when asked: folder 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "#ffffff",
+        "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+        "borderBottomWidth": 0.5,
+      },
+      undefined,
+    ]
+  }
+>
+  <RCTScrollView
+    accessibilityRole="header"
+    contentContainerStyle={
+      [
+        {
+          "alignItems": "center",
+        },
+        {
+          "paddingHorizontal": 16,
+          "paddingVertical": 8,
+        },
+      ]
+    }
+    horizontal={true}
+    showsHorizontalScrollIndicator={false}
+  >
+    <View>
+      <View
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": true,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        hitSlop={6}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+      >
+        <Text
+          style={
+            {
+              "color": "#866300",
+              "fontFamily": undefined,
+              "fontSize": 14,
+            }
+          }
+        >
+          All documents
+        </Text>
+      </View>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontSize": 14,
+            "marginHorizontal": 4,
+          }
+        }
+      >
+        /
+      </Text>
+      <View
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": true,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        hitSlop={6}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+      >
+        <Text
+          style={
+            {
+              "color": "#866300",
+              "fontFamily": undefined,
+              "fontSize": 14,
+            }
+          }
+        >
+          Alpha
+        </Text>
+      </View>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontSize": 14,
+            "marginHorizontal": 4,
+          }
+        }
+      >
+        /
+      </Text>
+      <View
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": true,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        hitSlop={6}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+      >
+        <Text
+          style={
+            {
+              "color": "#14140f",
+              "fontFamily": undefined,
+              "fontSize": 14,
+            }
+          }
+        >
+          Beta
+        </Text>
+      </View>
+    </View>
+  </RCTScrollView>
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+        },
+        {
+          "paddingHorizontal": 16,
+          "paddingVertical": 12,
+        },
+      ]
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+        }
+      }
+    >
+      <Text
+        accessibilityRole="header"
+        numberOfLines={1}
+        style={
+          {
+            "color": "#14140f",
+            "fontFamily": undefined,
+            "fontSize": 20,
+          }
+        }
+      >
+        Beta
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#6e6d64",
+            "fontFamily": undefined,
+            "fontSize": 12,
+          }
+        }
+      >
+        1 document
+      </Text>
+    </View>
+    <View
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "borderColor": "#eab308",
+          "borderRadius": 10,
+          "borderWidth": 1,
+          "marginLeft": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 8,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#866300",
+            "fontFamily": undefined,
+            "fontSize": 14,
+          }
+        }
+      >
+        New folder
+      </Text>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`Folder pieces FolderHeader: root, loading folder, loaded folder; "New folder" only when asked: root 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "#ffffff",
+        "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+        "borderBottomWidth": 0.5,
+      },
+      undefined,
+    ]
+  }
+>
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+        },
+        {
+          "paddingHorizontal": 16,
+          "paddingVertical": 12,
+        },
+      ]
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+        }
+      }
+    >
+      <Text
+        accessibilityRole="header"
+        numberOfLines={1}
+        style={
+          {
+            "color": "#14140f",
+            "fontFamily": undefined,
+            "fontSize": 20,
+          }
+        }
+      >
+        All documents
+      </Text>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`FolderList empty 1`] = `
+<View
+  accessibilityLiveRegion="polite"
+  style={
+    [
+      {
+        "alignItems": "center",
+        "justifyContent": "center",
+      },
+      {
+        "padding": 24,
+      },
+      undefined,
+    ]
+  }
+>
+  <Text
+    style={
+      {
+        "color": "#14140f",
+        "fontFamily": undefined,
+        "fontSize": 16,
+        "textAlign": "center",
+      }
+    }
+  >
+    No folders
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#6e6d64",
+        "fontFamily": undefined,
+        "fontSize": 14,
+        "marginTop": 4,
+        "textAlign": "center",
+      }
+    }
+  >
+    Folders you create will show up here.
+  </Text>
+</View>
+`;
+
+exports[`FolderList error with retry 1`] = `
+<View
+  accessibilityLiveRegion="polite"
+  accessibilityRole="alert"
+  style={
+    [
+      {
+        "alignItems": "center",
+        "justifyContent": "center",
+      },
+      {
+        "padding": 24,
+      },
+      undefined,
+    ]
+  }
+>
+  <Text
+    style={
+      {
+        "color": "#b91c1c",
+        "fontFamily": undefined,
+        "fontSize": 16,
+        "textAlign": "center",
+      }
+    }
+  >
+    Could not load folders
+  </Text>
+  <View
+    accessibilityRole="button"
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "backgroundColor": "#eab308",
+        "borderRadius": 10,
+        "marginTop": 12,
+        "paddingHorizontal": 16,
+        "paddingVertical": 8,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#1c1500",
+          "fontFamily": undefined,
+          "fontSize": 14,
+        }
+      }
+    >
+      Try again
+    </Text>
+  </View>
+</View>
+`;
+
+exports[`FolderList loading 1`] = `
+<View
+  accessibilityLiveRegion="polite"
+  style={
+    [
+      {
+        "alignItems": "center",
+        "justifyContent": "center",
+      },
+      {
+        "padding": 24,
+      },
+      undefined,
+    ]
+  }
+>
+  <ActivityIndicator
+    accessibilityLabel="Loading"
+    color="#866300"
+  />
+  <Text
+    style={
+      {
+        "color": "#14140f",
+        "fontFamily": undefined,
+        "fontSize": 16,
+        "textAlign": "center",
+      }
+    }
+  >
+    Loading folders
+  </Text>
+</View>
+`;
+
+exports[`FolderList populated: top level only, press, and no write UI by default 1`] = `
+<RCTScrollView
+  data={
+    [
+      {
+        "id": "a",
+        "item_count": 2,
+        "name": "Alpha",
+        "parent_id": null,
+        "total_item_count": 3,
+      },
+      {
+        "id": "c",
+        "item_count": 0,
+        "name": "Gamma",
+        "parent_id": null,
+      },
+    ]
+  }
+  getItem={[Function]}
+  getItemCount={[Function]}
+  getItemLayout={[Function]}
+  initialNumToRender={12}
+  keyExtractor={[Function]}
+  maxToRenderPerBatch={12}
+  onContentSizeChange={[Function]}
+  onLayout={[Function]}
+  onMomentumScrollBegin={[Function]}
+  onMomentumScrollEnd={[Function]}
+  onRefresh={[Function]}
+  onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
+  onScrollEndDrag={[Function]}
+  refreshControl={
+    <RefreshControlMock
+      onRefresh={[Function]}
+      refreshing={false}
+    />
+  }
+  refreshing={false}
+  removeClippedSubviews={false}
+  renderItem={[Function]}
+  scrollEventThrottle={0.0001}
+  stickyHeaderIndices={[]}
+  viewabilityConfigCallbackPairs={[]}
+  windowSize={7}
+>
+  <RCTRefreshControl />
+  <View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <View
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderBottomWidth": 0.5,
+              "flexDirection": "row",
+            },
+            {
+              "backgroundColor": "#ffffff",
+              "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+              "height": 64,
+              "paddingHorizontal": 16,
+            },
+            undefined,
+          ]
+        }
+      >
+        <View
+          accessibilityLabel="Alpha, 3 documents"
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "row",
+            }
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "borderWidth": 1.5,
+                },
+                {
+                  "backgroundColor": "#f7f7f6",
+                  "borderColor": "#eab308",
+                  "borderRadius": 6,
+                  "height": 28,
+                  "width": 36,
+                },
+              ]
+            }
+          />
+          <View
+            style={
+              [
+                {
+                  "flex": 1,
+                },
+                {
+                  "marginLeft": 12,
+                },
+              ]
+            }
+          >
+            <Text
+              numberOfLines={1}
+              style={
+                {
+                  "color": "#14140f",
+                  "fontFamily": undefined,
+                  "fontSize": 16,
+                }
+              }
+            >
+              Alpha
+            </Text>
+            <Text
+              style={
+                {
+                  "color": "#6e6d64",
+                  "fontFamily": undefined,
+                  "fontSize": 12,
+                  "marginTop": 2,
+                }
+              }
+            >
+              3 documents
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
+    <View
+      onFocusCapture={[Function]}
+      style={null}
+    >
+      <View
+        style={
+          [
+            {
+              "alignItems": "center",
+              "borderBottomWidth": 0.5,
+              "flexDirection": "row",
+            },
+            {
+              "backgroundColor": "#ffffff",
+              "borderBottomColor": "rgba(20, 20, 15, 0.07)",
+              "height": 64,
+              "paddingHorizontal": 16,
+            },
+            undefined,
+          ]
+        }
+      >
+        <View
+          accessibilityLabel="Gamma, 0 documents"
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "alignItems": "center",
+              "flex": 1,
+              "flexDirection": "row",
+            }
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "borderWidth": 1.5,
+                },
+                {
+                  "backgroundColor": "#f7f7f6",
+                  "borderColor": "#eab308",
+                  "borderRadius": 6,
+                  "height": 28,
+                  "width": 36,
+                },
+              ]
+            }
+          />
+          <View
+            style={
+              [
+                {
+                  "flex": 1,
+                },
+                {
+                  "marginLeft": 12,
+                },
+              ]
+            }
+          >
+            <Text
+              numberOfLines={1}
+              style={
+                {
+                  "color": "#14140f",
+                  "fontFamily": undefined,
+                  "fontSize": 16,
+                }
+              }
+            >
+              Gamma
+            </Text>
+            <Text
+              style={
+                {
+                  "color": "#6e6d64",
+                  "fontFamily": undefined,
+                  "fontSize": 12,
+                  "marginTop": 2,
+                }
+              }
+            >
+              0 documents
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;

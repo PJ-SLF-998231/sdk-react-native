@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Shelf camera example",
+    "slug": "shelf-camera-example",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "ios": {
+      "bundleIdentifier": "com.example.shelfcamera",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Take photos of documents to send to Shelf.",
+        "NSPhotoLibraryUsageDescription": "Choose photos to send to Shelf."
+      }
+    },
+    "android": {
+      "package": "com.example.shelfcamera",
+      "permissions": ["android.permission.CAMERA"]
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Take photos of documents to send to Shelf.",
+          "photosPermission": "Choose photos to send to Shelf.",
+          "microphonePermission": false
+        }
+      ]
+    ]
+  }
+}
