@@ -25,6 +25,30 @@ export interface ClearAllContext {
 type ClearAllHook = (ctx: ClearAllContext) => void | Promise<void>;
 const clearAllHooks = new Set<ClearAllHook>();
 
+/** Something that wants to hear about clearAll() without being kept alive by the registry. */
+export interface ClearAllTarget {
+  clear: ClearAllHook;
+}
+type WeakRefLike<T extends object> = { deref(): T | undefined };
+const weakTargets = new Set<WeakRefLike<ClearAllTarget>>();
+
+/**
+ * Like registerClearAllHook, but the registry holds `target` weakly (a WeakRef, where the engine has one), so a queue
+ * the host dropped without destroy() is not kept alive here. The caller must keep `target` reachable for as long as it
+ * is in use, and should still call the returned function on destroy. Dead references are dropped on the next clearAll.
+ */
+export function registerClearAllTarget(target: ClearAllTarget): () => void {
+  const WR = (globalThis as { WeakRef?: new <T extends object>(t: T) => WeakRefLike<T> }).WeakRef;
+  const ref: WeakRefLike<ClearAllTarget> = WR ? new WR(target) : { deref: () => target };
+  weakTargets.add(ref);
+  return () => weakTargets.delete(ref);
+}
+
+/** Test hook: how many hooks and targets clearAll() would currently call. */
+export function clearAllRegistrySize(): number {
+  return clearAllHooks.size + weakTargets.size;
+}
+
 /**
  * Lets an entry join clearAll() without the cache area importing it (camera/picker/upload must not reach documents, and
  * the root entry must not reach upload). The upload outbox registers its live queues, the documents entry its default
@@ -84,6 +108,18 @@ export async function clearAll(opts: ClearCacheOptions = {}): Promise<void> {
   for (const h of [...clearAllHooks]) {
     try {
       await h(ctx);
+    } catch {
+      /* best effort */
+    }
+  }
+  for (const ref of [...weakTargets]) {
+    const target = ref.deref();
+    if (!target) {
+      weakTargets.delete(ref);
+      continue;
+    }
+    try {
+      await target.clear(ctx);
     } catch {
       /* best effort */
     }

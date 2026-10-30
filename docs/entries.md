@@ -26,14 +26,17 @@ fallback or a clear `ShelfMissingPeerError` when absent.
 `clearAll()` (also `clearCache({ everything: true })`) lives in the root entry (`cache/clear.ts`) and clears the read cache,
 thumbnails and the persisted upload queue. It cannot import `documents` (thumbnails) or `upload` (live queues) without
 pulling them into every bundle, and `camera` / `picker` / `upload` must not reach `documents`. So those entries
-register a hook with `registerClearAllHook` when they load: `upload/outbox.ts` registers each live outbox (removed on
-`destroy()`), `documents/thumbnails.ts` registers the default thumbnail cache. The queue's storage keys
+register a hook with `registerClearAllHook` when they load; `upload/outbox.ts` registers each live outbox with
+`registerClearAllTarget` instead, which the registry holds weakly (a WeakRef) and which is removed on `destroy()`, `documents/thumbnails.ts` registers the default thumbnail cache. The queue's storage keys
 (`shelf:outbox:v1:<hash(scope)>:<id>`) are also deleted directly by prefix, so no entry is needed for the persisted part.
 The `upload -> cache` and `documents -> cache` edges are already permitted (both areas already import cache); no new edge was added.
 Plain `clearCache()` never touches `shelf:outbox:` keys.
 
 On a 401 / `not_configured` the outbox keeps its queue and pauses (`pauseReason` `'auth'` | `'not_configured'`); only
-the read cache is purged. See the README, "Storage, caching and sign-out" and Troubleshooting.
+the read cache is purged. The pause is persisted next to the queue (`<prefix>~pause`: reason, pausedAt and a 16-hex
+`credentialFingerprint`, never the credential) and compared with a fresh `getHeaders` fingerprint on start; `useOutbox` exposes
+`pausedReason` and `retryNow()` and reference-counts its shared outboxes (destroyed on the last unmount). The persisted key
+sits under the existing `shelf:outbox:v1:` prefix, so `clearAll()` deletes it with the queue. See the README, "Storage, caching and sign-out" and Troubleshooting.
 
 ## Auth episodes (`core/session.ts`)
 
@@ -41,7 +44,8 @@ the read cache is purged. See the README, "Storage, caching and sign-out" and Tr
 it without a new graph edge: `createShelfClient` creates one `AuthSession` per client and binds it in a `WeakMap`
 (`getAuthSession(client)`); the client reports each 401 / 503 `not_configured` and each success; the provider
 (`useBuild`) and the outbox subscribe to it with `onAuthLost(() => latestCallback)` instead of the client's own callback,
-so an injected client and shared clients behave the same. The outbox also reports refusals that come through a custom
+so an injected client and shared clients behave the same. `restoreEpisode`, `setCredentialReader` and `readCredential` let the outbox reopen a persisted pause's episode silently and
+fingerprint `getHeaders` without the credential leaving the client. The outbox also reports refusals that come through a custom
 `upload` transport and calls `session.resume()` from `resume()`. The episode ends on a success that began after it opened,
 `resume()`, or a change of `credentialFingerprint(getHeaders())` (pure-JS SHA-256 over the header names/values, 16 hex
 chars; the credential is never stored). See the README, "One onAuthLost per episode".

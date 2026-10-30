@@ -111,7 +111,7 @@ test('on 401 the read cache is purged but the persisted upload queue is kept (on
   await ob.enqueue({ uri: 'file:///tmp/a.pdf', name: 'a.pdf', type: 'application/pdf' });
   await waitFor(() => expect(ob.getSnapshot().pauseReason).toBe('auth'));
   await waitFor(async () => expect((await storage.list()).filter((k) => k.startsWith('shelf:v1:'))).toEqual([])); // cache purged
-  expect((await storage.list()).filter((k) => k.startsWith('shelf:outbox:v1:'))).toHaveLength(1); // queue kept
+  expect((await storage.list()).filter((k) => k.startsWith('shelf:outbox:v1:') && !k.endsWith('~pause'))).toHaveLength(1); // queue kept
   expect(ob.getSnapshot().items.map((i) => i.state)).toEqual(['pending']);
   expect(onAuthLost).toHaveBeenCalledTimes(1);
   ob.destroy();

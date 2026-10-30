@@ -1,3 +1,4 @@
+import { ShelfError } from './errors';
 import type { ShelfErrorLike } from './types';
 
 /** Why the session lost authorisation: a 401 (`auth`) or the proxy's 503 `not_configured`. */
@@ -40,6 +41,19 @@ export interface AuthSession {
   reportSuccess(token?: number): boolean;
   /** The host has fixed the credential and asks to try again. Ends the open episode. */
   resume(): boolean;
+  /**
+   * Reopens an episode that was open before an app restart (the outbox's persisted pause), silently: no start event and no
+   * onAuthLost, since the host was told when it first happened. A refusal while it is open stays silent; it ends on a
+   * success, resume() or a different credential. Does nothing when an episode is already open.
+   */
+  restoreEpisode(episode: { reason: AuthLossReason; fingerprint: string | null; startedAt: number; error?: ShelfErrorLike }): boolean;
+  /**
+   * Installs how to read the current credential's fingerprint (createShelfClient does, over its getHeaders). The
+   * credential never leaves the client; only its fingerprint does.
+   */
+  setCredentialReader(read: (() => Promise<string>) | null): void;
+  /** Calls getHeaders once and resolves its fingerprint; rejects when getHeaders throws; null when no reader is installed. Does not touch the episode. */
+  readCredential(): Promise<string> | null;
   /** Every episode start and end. Listener errors are swallowed. Returns the unsubscribe. */
   onEpisode(listener: (event: AuthEpisodeEvent) => void): () => void;
   /**
@@ -64,6 +78,7 @@ export function createAuthSession(now: () => number = Date.now): AuthSession {
   const listeners = new Set<(e: AuthEpisodeEvent) => void>();
   const hostGetters = new Set<() => ((error: ShelfErrorLike) => void) | undefined>();
   let delivered = new Set<unknown>();
+  let reader: (() => Promise<string>) | null = null;
 
   const emit = (event: AuthEpisodeEvent): void => {
     for (const l of [...listeners]) {
@@ -130,6 +145,22 @@ export function createAuthSession(now: () => number = Date.now): AuthSession {
       return end('success');
     },
     resume: () => end('resume'),
+    restoreEpisode(e) {
+      if (active) return false;
+      seq++;
+      openedAtSeq = seq;
+      active = {
+        reason: e.reason,
+        error: e.error ?? new ShelfError(e.reason === 'auth' ? 401 : 503, e.reason === 'auth' ? 'unauthorized' : 'not_configured', 'Authorisation lost before the app restarted'),
+        fingerprint: e.fingerprint,
+        startedAt: e.startedAt,
+      };
+      return true;
+    },
+    setCredentialReader(read) {
+      reader = read;
+    },
+    readCredential: () => (reader ? reader() : null),
     onEpisode(l) {
       listeners.add(l);
       return () => listeners.delete(l);
