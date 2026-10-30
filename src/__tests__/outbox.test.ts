@@ -114,24 +114,124 @@ test('a permanent 4xx fails at once and is not retried automatically', async () 
   expect([i.state, i.error?.permanent, i.error?.status]).toEqual(['failed', true, 415]);
 });
 
-test('a 401 purges the persisted queue and pauses until resume()', async () => {
-  const storage = createMemoryAdapter();
-  const t = controlled();
-  const ob = make({ ...base, client: createShelfClient({ baseUrl: 'https://x.test' }), storage, upload: t.upload, concurrency: 1 });
+const authErr = (status: 401 | 503) => new ShelfError(status, status === 401 ? 'unauthorized' : 'not_configured', 'refused');
+
+describe.each([
+  ['401', 401 as const, 'auth'],
+  ['503 not_configured', 503 as const, 'not_configured'],
+])('%s mid-drain', (_n, status, reason) => {
+  test('keeps every unsent item, stops draining, fires onAuthLost once, then resume() drains each exactly once', async () => {
+    const storage = createMemoryAdapter();
+    const t = controlled();
+    const onAuthLost = jest.fn();
+    const ob = make({ ...base, client: createShelfClient({ baseUrl: 'https://x.test' }), storage, upload: t.upload, concurrency: 2, onAuthLost });
+    const queued = [await ob.enqueue(file(1)), await ob.enqueue(file(2)), await ob.enqueue(file(3))];
+    await flush();
+    expect(t.calls).toHaveLength(2); // 1 and 2 in flight, 3 waiting
+    // Both in-flight requests are refused; the second answer arrives after the first one paused the queue.
+    t.calls[0]!.reject(authErr(status));
+    t.calls[1]!.reject(authErr(status));
+    await flush();
+    const s = ob.getSnapshot();
+    expect([s.paused, s.pauseReason]).toEqual([true, reason]);
+    expect(s.items.map((i) => i.state)).toEqual(['pending', 'pending', 'pending']);
+    expect(s.items.map((i) => i.attempts)).toEqual([0, 0, 0]);
+    expect(await storage.list()).toHaveLength(3); // nothing purged
+    expect(onAuthLost).toHaveBeenCalledTimes(1);
+    await jest.advanceTimersByTimeAsync(120000);
+    expect(t.calls).toHaveLength(2); // stopped
+
+    ob.resume();
+    ob.resume(); // idempotent
+    await flush();
+    expect(t.calls).toHaveLength(4); // 1 and 2 again, same client_refs
+    expect(t.calls.slice(2).map((c) => c.options.client_ref).sort()).toEqual([queued[0]!.client_ref, queued[1]!.client_ref].sort());
+    t.calls[2]!.resolve();
+    t.calls[3]!.resolve();
+    await flush();
+    expect(t.calls).toHaveLength(5);
+    expect(t.calls[4]!.options.client_ref).toBe(queued[2]!.client_ref);
+    t.calls[4]!.resolve();
+    await flush();
+    expect(ob.getSnapshot().items.map((i) => i.state)).toEqual(['done', 'done', 'done']);
+    expect(await storage.list()).toEqual([]);
+    const sent = t.calls.filter((c) => c.options.client_ref).map((c) => c.options.client_ref);
+    expect(new Set(sent).size).toBe(3);
+    expect(onAuthLost).toHaveBeenCalledTimes(1);
+  });
+});
+
+test('resume() while the credential is still refused pauses again and notifies again; every attempt re-reads getHeaders', async () => {
+  let token = 'old';
+  const m = mockFetch([{ status: 401 }, { status: 401 }, { status: 201, body: apiItem('srv') }]);
+  const onAuthLost = jest.fn();
+  const ob = make({ ...base, baseUrl: 'https://x.test', getHeaders: () => ({ Authorization: token }), fetch: m.fetch, onAuthLost, storage: createMemoryAdapter() });
   await ob.enqueue(file(1));
-  await ob.enqueue(file(2));
   await flush();
-  t.calls[0]!.reject(new ShelfError(401, 'unauthorized', 'revoked'));
-  await flush();
-  const s = ob.getSnapshot();
-  expect([s.paused, s.pauseReason, s.items.length]).toEqual([true, 'auth', 0]);
-  expect(await storage.list()).toEqual([]);
-  await ob.enqueue(file(3)); // persisted, but nothing starts while paused
-  await jest.advanceTimersByTimeAsync(60000);
-  expect(t.calls).toHaveLength(1);
+  expect(ob.getSnapshot().pauseReason).toBe('auth');
   ob.resume();
   await flush();
-  expect(t.calls).toHaveLength(2);
+  expect(ob.getSnapshot().pauseReason).toBe('auth');
+  expect(onAuthLost).toHaveBeenCalledTimes(2);
+  token = 'fresh';
+  ob.resume();
+  await flush();
+  expect(ob.getSnapshot().items[0]!.state).toBe('done');
+  expect(m.calls.map((c) => c.init.headers.Authorization)).toEqual(['old', 'old', 'fresh']);
+  expect(ob.getSnapshot().paused).toBe(false);
+});
+
+test('an app restart while auth-paused keeps the items; the new outbox drains them on resume()', async () => {
+  const storage = createMemoryAdapter();
+  const t = controlled();
+  const first = make({ ...base, client: createShelfClient({ baseUrl: 'https://x.test' }), storage, upload: t.upload });
+  const queued = await first.enqueue(file(1));
+  await first.enqueue(file(2));
+  await flush();
+  t.calls[0]!.reject(authErr(401));
+  await flush();
+  expect(first.getSnapshot().pauseReason).toBe('auth');
+  first.destroy(); // the app dies
+  // The pause is not persisted (a restart with a valid token must just work). The new queue loads both items, and
+  // when the credential is still refused its first attempt pauses it again, with nothing lost.
+  const t2 = controlled();
+  const onAuthLost = jest.fn();
+  const second = make({ ...base, client: createShelfClient({ baseUrl: 'https://x.test' }), storage, upload: t2.upload, onAuthLost });
+  await second.ready;
+  await flush();
+  expect(second.getSnapshot().items.map((i) => i.uri).sort()).toEqual([file(1).uri, file(2).uri]);
+  expect(t2.calls).toHaveLength(2);
+  t2.calls[0]!.reject(authErr(401));
+  t2.calls[1]!.reject(authErr(401));
+  await flush();
+  expect(second.getSnapshot().pauseReason).toBe('auth');
+  expect(onAuthLost).toHaveBeenCalledTimes(1);
+  expect(await storage.list()).toHaveLength(2);
+  await jest.advanceTimersByTimeAsync(120000);
+  expect(t2.calls).toHaveLength(2);
+  second.resume();
+  await flush();
+  expect(t2.calls).toHaveLength(4);
+  expect(t2.calls.slice(2).map((c) => c.options.client_ref).sort()).toEqual(t2.calls.slice(0, 2).map((c) => c.options.client_ref).sort());
+  expect(t2.calls[2]!.options.client_ref === queued.client_ref || t2.calls[3]!.options.client_ref === queued.client_ref).toBe(true);
+  t2.calls[2]!.resolve();
+  t2.calls[3]!.resolve();
+  await flush();
+  expect(second.getSnapshot().items.map((i) => i.state)).toEqual(['done', 'done']);
+  expect(await storage.list()).toEqual([]);
+});
+
+test('a 401 while manually paused upgrades the pause to auth and still keeps items', async () => {
+  const storage = createMemoryAdapter();
+  const t = controlled();
+  const ob = make({ ...base, client: createShelfClient({ baseUrl: 'https://x.test' }), storage, upload: t.upload });
+  await ob.enqueue(file(1));
+  await flush();
+  ob.pause();
+  t.calls[0]!.reject(authErr(401));
+  await flush();
+  expect(ob.getSnapshot().pauseReason).toBe('auth');
+  expect(await storage.list()).toHaveLength(1);
 });
 
 test('limits concurrency to 3 and starts the next as slots free', async () => {

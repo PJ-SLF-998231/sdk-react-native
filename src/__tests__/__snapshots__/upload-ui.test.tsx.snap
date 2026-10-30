@@ -97,9 +97,320 @@ exports[`OfflineBanner snapshots and visibility: paused auth 1`] = `
       }
     }
   >
-    Uploads are paused because the connection to Shelf is no longer authorised.
+    Sign in again to continue uploading.
   </Text>
 </View>
+`;
+
+exports[`OfflineBanner snapshots and visibility: paused auth with kept uploads 1`] = `
+<View
+  accessibilityRole="alert"
+  style={
+    [
+      {
+        "borderWidth": 1,
+        "overflow": "hidden",
+      },
+      {
+        "backgroundColor": "#f7f7f6",
+        "borderColor": "rgba(20, 20, 15, 0.12)",
+        "borderRadius": 10,
+        "paddingLeft": 19,
+        "paddingRight": 16,
+        "paddingVertical": 12,
+      },
+      undefined,
+    ]
+  }
+>
+  <View
+    style={
+      [
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "top": 0,
+          "width": 3,
+        },
+        {
+          "backgroundColor": "#b91c1c",
+        },
+      ]
+    }
+  />
+  <Text
+    style={
+      {
+        "color": "#14140f",
+        "fontFamily": undefined,
+        "fontSize": 14,
+      }
+    }
+  >
+    Sign in again to continue uploading. 1 upload is kept and will be sent afterwards.
+  </Text>
+</View>
+`;
+
+exports[`OfflineBanner snapshots and visibility: paused not_configured 1`] = `
+<View
+  accessibilityRole="alert"
+  style={
+    [
+      {
+        "borderWidth": 1,
+        "overflow": "hidden",
+      },
+      {
+        "backgroundColor": "#f7f7f6",
+        "borderColor": "rgba(20, 20, 15, 0.12)",
+        "borderRadius": 10,
+        "paddingLeft": 19,
+        "paddingRight": 16,
+        "paddingVertical": 12,
+      },
+      undefined,
+    ]
+  }
+>
+  <View
+    style={
+      [
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "top": 0,
+          "width": 3,
+        },
+        {
+          "backgroundColor": "#b91c1c",
+        },
+      ]
+    }
+  />
+  <Text
+    style={
+      {
+        "color": "#14140f",
+        "fontFamily": undefined,
+        "fontSize": 14,
+      }
+    }
+  >
+    Shelf is not connected, so uploads are paused. 2 uploads are kept and will be sent afterwards.
+  </Text>
+</View>
+`;
+
+exports[`UploadStatusBadge shows the pause reason on unsent items only 1`] = `
+[
+  <View
+    accessibilityLabel="Upload: Needs sign-in"
+    style={
+      [
+        {
+          "alignItems": "center",
+          "alignSelf": "flex-start",
+          "borderRadius": 999,
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "gap": 6,
+        },
+        {
+          "backgroundColor": "#ffffff",
+          "borderColor": "#b91c1c",
+          "borderStyle": "solid",
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "borderRadius": 3,
+            "height": 6,
+            "width": 6,
+          },
+          {
+            "backgroundColor": "#b91c1c",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        {
+          "color": "#b91c1c",
+          "fontFamily": undefined,
+          "fontSize": 12,
+          "letterSpacing": 0.6,
+          "textTransform": "uppercase",
+        }
+      }
+    >
+      Needs sign-in
+    </Text>
+  </View>,
+  <View
+    accessibilityLabel="Upload: Not connected"
+    style={
+      [
+        {
+          "alignItems": "center",
+          "alignSelf": "flex-start",
+          "borderRadius": 999,
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "gap": 6,
+        },
+        {
+          "backgroundColor": "#ffffff",
+          "borderColor": "#b91c1c",
+          "borderStyle": "solid",
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "borderRadius": 3,
+            "height": 6,
+            "width": 6,
+          },
+          {
+            "backgroundColor": "#b91c1c",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        {
+          "color": "#b91c1c",
+          "fontFamily": undefined,
+          "fontSize": 12,
+          "letterSpacing": 0.6,
+          "textTransform": "uppercase",
+        }
+      }
+    >
+      Not connected
+    </Text>
+  </View>,
+  <View
+    accessibilityLabel="Upload: Paused"
+    style={
+      [
+        {
+          "alignItems": "center",
+          "alignSelf": "flex-start",
+          "borderRadius": 999,
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "gap": 6,
+        },
+        {
+          "backgroundColor": "#f7f7f6",
+          "borderColor": "#866300",
+          "borderStyle": "dashed",
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "borderRadius": 3,
+            "height": 6,
+            "width": 6,
+          },
+          {
+            "backgroundColor": "#866300",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        {
+          "color": "#866300",
+          "fontFamily": undefined,
+          "fontSize": 12,
+          "letterSpacing": 0.6,
+          "textTransform": "uppercase",
+        }
+      }
+    >
+      Paused
+    </Text>
+  </View>,
+  <View
+    accessibilityLabel="Upload: Uploaded"
+    style={
+      [
+        {
+          "alignItems": "center",
+          "alignSelf": "flex-start",
+          "borderRadius": 999,
+          "borderWidth": 1,
+          "flexDirection": "row",
+          "gap": 6,
+        },
+        {
+          "backgroundColor": "#ffffff",
+          "borderColor": "#eab308",
+          "borderStyle": "solid",
+          "paddingHorizontal": 12,
+          "paddingVertical": 4,
+        },
+        undefined,
+      ]
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "borderRadius": 3,
+            "height": 6,
+            "width": 6,
+          },
+          {
+            "backgroundColor": "#866300",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        {
+          "color": "#866300",
+          "fontFamily": undefined,
+          "fontSize": 12,
+          "letterSpacing": 0.6,
+          "textTransform": "uppercase",
+        }
+      }
+    >
+      Uploaded
+    </Text>
+  </View>,
+]
 `;
 
 exports[`UploadStatusBadge snapshots 1`] = `
