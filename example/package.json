@@ -1,0 +1,20 @@
+{
+  "name": "shelf-sdk-rn-camera-example",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "mock": "node mock-server.mjs",
+    "start": "expo start",
+    "export:ios": "expo export --platform ios --output-dir dist-ios",
+    "export:android": "expo export --platform android --output-dir dist-android"
+  },
+  "dependencies": {
+    "@pj-slf-998231/sdk-react-native": "file:..",
+    "expo": "^58.0.21",
+    "expo-image-picker": "~58.0.10",
+    "expo-status-bar": "~58.0.4",
+    "react": "19.3.0",
+    "react-native": "0.88.1"
+  }
+}

@@ -1,6 +1,7 @@
 import { ShelfPermissionDeniedError } from '../shared/errors';
 import { assetToFile, stampedName } from '../shared/files';
-import { loadDocumentScanner, loadExpoImagePicker } from '../shared/peers';
+import { loadExpoImagePicker } from '../shared/peer-image-picker';
+import { loadDocumentScanner } from '../shared/peer-scanner';
 import type { DocumentScannerLike, ImagePickerLike } from '../shared/peers';
 import type { CaptureAdapter } from '../shared/types';
 
