@@ -16,7 +16,25 @@ const CAPTURE_ENTRIES = { camera: "picker", picker: "camera" };
 const CAPTURE_ALLOWED_AREAS = new Set(["core", "cache", "provider", "theme", "upload", "shared"]);
 // storage/ is allowed only for what upload's default (memory) adapter needs; asyncstorage and sqlite stay out.
 const CAPTURE_ALLOWED_STORAGE_FILES = new Set(["storage/memory.ts", "storage/types.ts"]);
-const UPLOAD_FORBIDDEN_DIRS = ["folders", "documents", "document", "camera", "picker"];
+const UPLOAD_FORBIDDEN_DIRS = ["folders", "documents", "document", "camera", "picker", "hooks"];
+// Browsing entries are list/document code. They may use core, cache, provider, theme, hooks, shared helpers and (hooks only)
+// the upload outbox hooks, but never the capture entries or the document-detail entry, and folders/documents do not reach
+// each other (a host that shows only one of them should not ship the other).
+const BROWSE_FORBIDDEN_AREAS = {
+  folders: ["camera", "picker", "document", "documents", "upload"],
+  documents: ["camera", "picker", "document", "folders", "upload"],
+  hooks: ["camera", "picker", "document", "folders", "documents"],
+};
+// Names that must not appear in the built browsing entries (capture code and its optional peers), and that must appear
+// in the entry that owns them, so the marker check can never pass vacuously on an empty bundle.
+const CAPTURE_CODE_MARKERS = ["CameraButton", "DocumentPickerButton", "PhotoLibraryButton", "useCaptureUpload", "expo-image-picker", "expo-document-picker", "react-native-document-scanner-plugin", "expo-camera"];
+const REQUIRED_MARKERS = {
+  folders: ["FolderList", "FolderCard", "FolderBreadcrumb", "FolderHeader"],
+  documents: ["DocumentList", "DocumentRow", "DocumentCard", "createFileThumbnailCache", 'require("expo-file-system/legacy")', 'require("@shopify/flash-list")'],
+  hooks: ["useFolders", "useFolder", "useDocuments", "useDocumentText", "useDocumentSite", "useOutbox"],
+  camera: ["CameraButton"],
+  picker: ["DocumentPickerButton"],
+};
 // Explicit allow-list: "<entry> -> <area>" edges that are permitted. Keep empty unless justified.
 const ALLOW = new Set([]);
 const { gzipSync } = await import("node:zlib");
@@ -53,7 +71,7 @@ function graph(entryFile) {
 }
 
 // Names that exist only in list/document code; if one shows up in a camera/picker build, the graph leaked.
-const LIST_CODE_MARKERS = ["ShelfFolders", "ShelfDocuments", "ShelfDocument", "useFolders", "useDocuments", "useDocument", "FolderList", "DocumentList"];
+const LIST_CODE_MARKERS = ["FolderList", "FolderCard", "FolderBreadcrumb", "FolderHeader", "DocumentList", "DocumentRow", "DocumentCard", "useFolders", "useFolder", "useDocuments", "useDocumentText", "useDocumentSite", "createFileThumbnailCache", "createMemoryThumbnailCache", "@shopify/flash-list", "expo-file-system"];
 
 // The built entry plus the shared chunks it imports (relative imports/requires in dist).
 function builtGraph(entryJs) {
@@ -103,6 +121,12 @@ for (const entry of ["index", ...ENTRIES]) {
       if (!ALLOW.has(`${entry} -> ${area}`)) errors.push(`${entry} reaches ${relative(root, f)} (area "${area}") without allow-list entry`);
     }
   }
+  if (entry in BROWSE_FORBIDDEN_AREAS) {
+    for (const f of files) {
+      const area = relative(src, f).split("/")[0];
+      if (BROWSE_FORBIDDEN_AREAS[entry].includes(area)) errors.push(`${entry} reaches ${relative(root, f)} (area "${area}")`);
+    }
+  }
   if (entry === "upload") {
     // The upload entry may use core, storage, theme and provider, but not the folder/document browsing UI.
     for (const f of files) {
@@ -113,11 +137,21 @@ for (const entry of ["index", ...ENTRIES]) {
   const out = join(root, "dist", `${entry}.js`);
   const srcBytes = [...files].reduce((n, f) => n + statSync(f).size, 0);
   const bg = existsSync(out) ? builtGraph(out) : null;
-  if (entry in CAPTURE_ENTRIES && bg) {
+  if ((entry in CAPTURE_ENTRIES || entry === "upload") && bg) {
     for (const f of bg.files) {
       const text = readFileSync(f, "utf8");
       for (const marker of LIST_CODE_MARKERS) if (text.includes(marker)) errors.push(`${entry}: built file ${relative(root, f)} contains list/document code (${marker})`);
     }
+  }
+  if (bg && entry in BROWSE_FORBIDDEN_AREAS) {
+    for (const f of bg.files) {
+      const text = readFileSync(f, "utf8");
+      for (const marker of CAPTURE_CODE_MARKERS) if (text.includes(marker)) errors.push(`${entry}: built file ${relative(root, f)} contains capture code (${marker})`);
+    }
+  }
+  if (bg && entry in REQUIRED_MARKERS) {
+    const all = [...bg.files].map((f) => readFileSync(f, "utf8")).join("\n");
+    for (const marker of REQUIRED_MARKERS[entry]) if (!all.includes(marker)) errors.push(`${entry}: built output is missing expected "${marker}" (empty or mis-built entry?)`);
   }
   if (entry in CAPTURE_ENTRIES) areaReports.push({ entry, areas: [...new Set([...files].map((f) => relative(src, f).split("/")[0]))].sort() });
   rows.push({ entry, files: files.size, srcBytes, bytes: existsSync(out) ? statSync(out).size : null, builtFiles: bg?.files.size ?? null, builtBytes: bg?.bytes ?? null, gz: bg?.gzip ?? null });

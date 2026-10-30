@@ -30,6 +30,11 @@ export interface ShelfConnectionProps {
   offline?: OfflineSettings;
   theme?: ThemeMode | ShelfTheme;
   themeOverrides?: ThemeOverrides;
+  /**
+   * An already resolved `useShelf()` value. Composite components use it so the hooks underneath share their client,
+   * cache and SWR instead of building a second set from the same props.
+   */
+  shelf?: ShelfContextValue;
 }
 
 export interface ShelfContextValue {
@@ -123,8 +128,8 @@ export function useShelfContext(): ShelfContextValue | null {
 export function useShelf(props: ShelfConnectionProps = {}): ShelfContextValue {
   const ctx = useContext(Ctx);
   const explicit = Boolean(props.client || props.baseUrl);
-  const built = useBuild(props, explicit || !ctx);
-  const value = explicit ? built : (ctx ?? built);
+  const built = useBuild(props, !props.shelf && (explicit || !ctx));
+  const value = props.shelf ?? (explicit ? built : (ctx ?? built));
   if (!value) throw new Error('Shelf: no client. Pass `client`, or `baseUrl` and `getHeaders`, or render inside <ShelfProvider>.');
   return value;
 }

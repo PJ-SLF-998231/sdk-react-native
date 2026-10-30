@@ -81,3 +81,55 @@ version (`capture()`, `state`, `denied`, `openSettings()`, `dismiss()`).
   return `[]` for cancel and throw `ShelfPermissionDeniedError` for a refused permission. `expo-camera` is not wrapped
   because it needs a viewfinder screen of your own.
 - A multi-page scan is uploaded as one image per page (no PDF assembly in the SDK).
+
+## Folders, documents and hooks (U5)
+
+```tsx
+import { FolderList, FolderHeader } from '@pj-slf-998231/sdk-react-native/folders';
+import { DocumentList } from '@pj-slf-998231/sdk-react-native/documents';
+import { useFolder, useDocuments, useDocumentText, useDocumentSite } from '@pj-slf-998231/sdk-react-native/hooks';
+
+<FolderHeader folderId={id} onNavigate={(f) => go(f?.id)} />
+<FolderList parentId={id} onPressFolder={(f) => go(f.id)} />
+<DocumentList folderId={id} onPressDocument={(d) => open(d.id)} />                // rows
+<DocumentList folderId={id} variant="card" columns={3} listComponent="flashlist" />  // grid, FlashList if installed
+```
+
+All of them work inside `<ShelfProvider>` or with `client` / `baseUrl` + `getHeaders` props, and are stale-while-revalidate:
+the cached copy is on screen as soon as the cache is read and a background request replaces it. With `storage` +
+`cacheScope` the cache is persisted per user; otherwise it lives in memory. A failed refresh keeps the cached data
+(`error` / `offline` are set; the list shows "Offline: showing saved documents").
+
+- **Hooks** (`/hooks`, headless): `useFolders()`, `useFolder(id)` (folder, root-to-folder `path`, `children`, derived from
+  the folder list; the API has no per-folder route), `useDocuments(folderId, { pageSize, recursive })` (`items`,
+  `hasMore`, `loadMore`), `useDocument(id)`, `useDocumentText(id)` (`text`; shares the document's cache entry) and
+  `useDocumentSite(id)` (a 404 is `status: 'none'`). U6 builds the document screen on the last two.
+  A revalidation refetches page 1 and keeps further loaded pages behind it.
+- **Folder writes are hidden.** Integration keys have no folder writes, so "New folder" (`FolderHeader.onCreateFolder`),
+  Rename and Delete (`FolderList.onRenameFolder` / `onDeleteFolder`, `FolderCard.onRename` / `onDelete`) render only
+  when you pass the handler. The SDK does not run the flow; call `client.createFolder` etc. yourself behind a proxy that
+  allows it.
+- **Virtualised lists.** `DocumentList` is a `FlatList` by default with fixed-height items and `getItemLayout`
+  (`windowSize` 7, `initialNumToRender` 10, `maxToRenderPerBatch` 10, `removeClippedSubviews`). `listComponent="flashlist"`
+  uses the optional peer `@shopify/flash-list` (loaded lazily; a missing peer falls back to `FlatList` with one warning),
+  or pass any FlatList-compatible component. `listProps` overrides any list prop. Further pages load on scroll.
+- **Thumbnails** load only for mounted rows, using the smallest `preview_sizes` rendition that covers the box at the
+  device pixel ratio (small 360 px, medium 800, large 2000 on the long edge). They are downloaded natively with the auth
+  headers straight to disk by the default `ThumbnailCache` (optional peer `expo-file-system`, LRU capped at 64 MB, index
+  persisted); without the peer an in-memory fallback is used. Supply your own: `thumbnailCache={{ get, put, clear }}`
+  or `setDefaultThumbnailCache(...)`. Empty the disk cache on sign-out with `getDefaultThumbnailCache().clear()`
+  (`clearCache()` covers data, not pictures).
+- **Entry graph.** `folders`, `documents` and `hooks` never import camera, picker or document code, and `npm run
+  check:size` checks both the source graph and the built bytes (markers in both directions).
+
+### Performance
+
+`src/__tests__/perf.test.tsx` seeds 2,000 documents in one folder (memory storage adapter, per-user cache scope), mounts
+`DocumentList`, and times a cold start (fresh storage read and cache) to the first row rendered from the cache, with the
+network pending. Result in jest (react-test-renderer on Node, so a floor rather than a device number):
+
+- **2,000 items: 4-10 ms to first list render from cache** (3 runs per invocation, 10 rows mounted of 2,000),
+  after one untimed warm-up render. The very first render in a fresh jest process, with no warm-up, took 87 ms.
+  The test asserts < 100 ms and < 40 mounted rows, and prints the numbers.
+- Not measured here (needs a device): JS bundle load, the AsyncStorage / SQLite read of the persisted entry (the memory
+  adapter has no I/O), native image decoding, and scroll frame rate.

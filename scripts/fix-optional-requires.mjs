@@ -5,7 +5,7 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const dist = join(resolve(dirname(fileURLToPath(import.meta.url)), ".."), "dist");
-const PEERS = ["expo-image-picker", "expo-document-picker", "react-native-document-scanner-plugin", "@react-native-community/netinfo", "expo-sqlite", "expo-font", "@react-native-async-storage/async-storage"];
+const PEERS = ["expo-image-picker", "expo-document-picker", "react-native-document-scanner-plugin", "@react-native-community/netinfo", "expo-sqlite", "expo-font", "@react-native-async-storage/async-storage", "expo-file-system/legacy", "expo-file-system", "@shopify/flash-list"];
 const re = new RegExp(`(?:\\b_chunk\\w+\\.)?__require(?:\\.call\\(void 0, |\\()("(?:${PEERS.map((p) => p.replace(/[/-]/g, "\\$&")).join("|")})")\\)`, "g");
 
 const seen = new Set();
