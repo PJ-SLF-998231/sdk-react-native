@@ -14,7 +14,7 @@ export interface ShelfClientOptions {
   getHeaders?: GetHeaders;
   /** Replaces the global `fetch` (tests, certificate pinning, instrumentation). */
   fetch?: typeof fetch;
-  /** Runs once per failing request when the session is no longer authorised (401 or proxy 503 `not_configured`). */
+  /** Runs once per auth-loss episode (401 or proxy 503 `not_configured`), not once per failing request; see `getAuthSession`. */
   onAuthLost?: (error: ShelfErrorLike) => void;
 }
 

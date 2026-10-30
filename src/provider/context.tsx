@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useColorScheme } from 'react-native';
 import { createCache, disposeCache } from '../cache/cache';
 import { createSwr } from '../cache/swr';
 import type { CacheStore, Swr } from '../cache/types';
 import { createShelfClient } from '../core/client';
 import type { ShelfClient } from '../core/client';
+import { getAuthSession } from '../core/session';
 import type { StorageAdapter } from '../core/storage-adapter';
 import type { GetHeaders, ShelfErrorLike } from '../core/types';
 import { resolveTheme, createTheme } from '../theme/tokens';
@@ -76,20 +77,38 @@ function useBuild(props: ShelfConnectionProps, active: boolean): ShelfContextVal
       baseUrl: given?.baseUrl ?? (baseUrl as string),
       cacheScope: offlineEnabled ? cacheScope : undefined,
     });
-    const swr = createSwr(cache, { onAuthLost: () => undefined });
+    let session: ReturnType<typeof getAuthSession> | null = null;
+    const swr = createSwr(cache, {
+      // A fetcher that fails outside a createShelfClient client still opens the episode (idempotent when the client did).
+      onAuthLost: (e) => {
+        if (e && session) session.reportAuthFailure(e as ShelfErrorLike);
+      },
+    });
     const client =
       given ??
       createShelfClient({
         baseUrl: baseUrl as string,
         getHeaders: () => (headersRef.current ? headersRef.current() : {}),
         fetch: fetchImpl,
-        onAuthLost: (e) => {
-          void swr.purge();
-          authRef.current?.(e);
-        },
       });
+    session = getAuthSession(client);
     return { client, cache, swr };
   }, [active, given, baseUrl, fetchImpl, cacheScope, storage, offlineEnabled]);
+
+  // The host's onAuthLost and the cache purge ride the client's auth session: once per episode however many requests
+  // fail, injected client or not, and once even when several providers/components share the client.
+  useLayoutEffect(() => {
+    if (!core) return undefined;
+    const session = getAuthSession(core.client);
+    const offHost = session.onAuthLost(() => authRef.current);
+    const offEpisode = session.onEpisode((ev) => {
+      if (ev.type === 'start') void core.swr.purge();
+    });
+    return () => {
+      offHost();
+      offEpisode();
+    };
+  }, [core]);
 
   useEffect(
     () => () => {

@@ -1,4 +1,6 @@
 import { ShelfError, isAuthLost } from './errors';
+import { credentialFingerprint } from './fingerprint';
+import { bindAuthSession, createAuthSession } from './session';
 import type {
   AuthedSource,
   CreateFolderInput,
@@ -72,25 +74,31 @@ export function createShelfClient(options: ShelfClientOptions): ShelfClient {
   const doFetch: typeof fetch = (input, init) => (options.fetch ?? globalThis.fetch)(input, init);
   const enc = encodeURIComponent;
 
-  async function authHeaders(accept: string, extra?: HeadersLike): Promise<HeadersLike> {
+  const session = createAuthSession();
+  if (options.onAuthLost) session.onAuthLost(() => options.onAuthLost);
+
+  /** The headers for one request, and the fingerprint of the credential in them (for the auth session). */
+  async function resolveHeaders(accept: string, extra?: HeadersLike): Promise<{ headers: HeadersLike; fingerprint: string }> {
     const fromHost = options.getHeaders ? await options.getHeaders() : {};
-    return { ...extra, ...fromHost, Accept: accept };
+    const fingerprint = credentialFingerprint(fromHost);
+    session.observeCredential(fingerprint);
+    return { headers: { ...extra, ...fromHost, Accept: accept }, fingerprint };
+  }
+
+  async function authHeaders(accept: string, extra?: HeadersLike): Promise<HeadersLike> {
+    return (await resolveHeaders(accept, extra)).headers;
   }
 
   async function send(path: string, init: RequestInit, accept: string, signal?: AbortSignal, extra?: HeadersLike, allow304 = false): Promise<Response> {
-    const headers = await authHeaders(accept, extra);
+    const token = session.begin();
+    const { headers, fingerprint } = await resolveHeaders(accept, extra);
     const res = await doFetch(base + path, { ...init, headers, ...(signal ? { signal } : {}) });
     if (!res.ok && !(allow304 && res.status === 304)) {
       const err = await toError(res);
-      if (isAuthLost(err)) {
-        try {
-          options.onAuthLost?.(err);
-        } catch {
-          /* a host callback must not mask the request error */
-        }
-      }
+      if (isAuthLost(err)) session.reportAuthFailure(err, { fingerprint });
       throw err;
     }
+    session.reportSuccess(token);
     return res;
   }
 
@@ -103,7 +111,7 @@ export function createShelfClient(options: ShelfClientOptions): ShelfClient {
 
   const json = { 'Content-Type': 'application/json' };
 
-  return {
+  const client: ShelfClient = {
     baseUrl: base,
 
     info: (o) => request<ShelfInfo>('/', {}, o),
@@ -193,6 +201,8 @@ export function createShelfClient(options: ShelfClientOptions): ShelfClient {
 
     getSite: (id, o) => request<ShelfSite>(`/files/${enc(id)}/site`, {}, o),
   };
+  bindAuthSession(client, session);
+  return client;
 
   async function thumbResult(res: Response): Promise<ThumbnailResult> {
     const bytes = await res.arrayBuffer();
