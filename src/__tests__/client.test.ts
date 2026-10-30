@@ -132,7 +132,7 @@ test('typed errors carry status, code and field', async () => {
   expect([e2.status, e2.code]).toEqual([404, 'http_error']);
 });
 
-test('401 and 503 not_configured are auth loss and fire onAuthLost; other failures do not', async () => {
+test('401 and 503 not_configured are auth loss and fire onAuthLost once per episode; other failures do not', async () => {
   const lost = jest.fn();
   const m = mockFetch([{ status: 401, body: { code: 'unauthorized' } }, { status: 503, body: { error: 'not_configured' } }, { status: 503, body: { code: 'down' } }, { status: 502 }]);
   const c = createShelfClient({ baseUrl: base, fetch: m.fetch, onAuthLost: lost });
@@ -140,11 +140,11 @@ test('401 and 503 not_configured are auth loss and fire onAuthLost; other failur
   const e2 = await c.info().catch((x) => x);
   expect(isAuthLost(e1)).toBe(true);
   expect(isAuthLost(e2)).toBe(true);
-  expect(lost).toHaveBeenCalledTimes(2);
+  expect(lost).toHaveBeenCalledTimes(1); // same episode: the 503 after the 401 does not notify again
   const e3 = await c.info().catch((x) => x);
   const e4 = await c.info().catch((x) => x);
   expect([isAuthLost(e3), isOfflineError(e3), isOfflineError(e4)]).toEqual([false, true, true]);
-  expect(lost).toHaveBeenCalledTimes(2);
+  expect(lost).toHaveBeenCalledTimes(1);
 });
 
 test('network failure is offline, abort is not; a throwing onAuthLost does not mask the error', async () => {

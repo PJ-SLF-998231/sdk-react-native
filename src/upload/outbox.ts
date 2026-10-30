@@ -1,5 +1,6 @@
 import { createShelfClient } from '../core/client';
 import type { ShelfClient } from '../core/client';
+import { createAuthSession, getAuthSession } from '../core/session';
 import type { StorageAdapter } from '../core/storage-adapter';
 import type { GetHeaders, ShelfErrorLike, ShelfItem, UploadFile, UploadOptions } from '../core/types';
 import { createMemoryAdapter } from '../storage/memory';
@@ -138,6 +139,9 @@ export function createOutbox(options: OutboxOptions): Outbox {
       ? createShelfClient({ baseUrl: options.baseUrl, getHeaders: options.getHeaders, fetch: options.fetch })
       : null);
   if (!client && !options.upload) throw new Error('Shelf outbox: pass a `client`, or `baseUrl` (with `getHeaders`).');
+  // The client's auth session: onAuthLost is once per episode, shared with every other holder of the client.
+  const session = client ? getAuthSession(client) : createAuthSession();
+  const offAuthLost = session.onAuthLost(() => options.onAuthLost);
   const storage = options.storage ?? createMemoryAdapter();
   const prefix = outboxPrefix(options.scope);
   const concurrency = Math.max(1, Math.min(3, Math.floor(options.concurrency ?? 3)));
@@ -302,17 +306,11 @@ export function createOutbox(options: OutboxOptions): Outbox {
       c?.abort();
     }
     if (refused.item.state === 'uploading') update(refused, { state: 'pending', progress: 0, nextAttemptAt: 0, error: undefined });
-    const first = pauseReason !== 'auth' && pauseReason !== 'not_configured';
     pauseReason = reason;
     clearTimer();
     emit();
-    if (first) {
-      try {
-        options.onAuthLost?.(err as ShelfErrorLike);
-      } catch {
-        /* a host callback must not break the queue */
-      }
-    }
+    // Opens the episode (and tells the host) only for the first refusal; later ones just keep the queue paused.
+    session.reportAuthFailure(err as ShelfErrorLike);
   }
 
   /** clearAll(): forget every item (aborting running ones) and delete this queue's records. Files at the URIs are not touched. */
@@ -448,6 +446,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
       emit();
     },
     resume() {
+      session.resume(); // the host says the credential is fixed: a refusal now is a new episode
       if (!pauseReason) return;
       pauseReason = null;
       emit();
@@ -462,6 +461,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
       destroyed = true;
       clearTimer();
       unsubscribeNet();
+      offAuthLost();
       unregisterClear();
       for (const e of entries.values()) {
         e.controller?.abort();

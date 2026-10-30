@@ -18,7 +18,7 @@ export interface SwrImpl extends Swr {
 export interface CreateSwrOptions {
   now?: () => number;
   /** Called once when a fetch fails with isAuthLost; the cache has been purged by then. */
-  onAuthLost?: () => void;
+  onAuthLost?: (error?: unknown) => void;
 }
 
 const isAbort = (e: unknown): boolean => (e as { name?: string } | null)?.name === 'AbortError';
@@ -94,13 +94,14 @@ export const createSwr = ((cache: CacheStore, opts: CreateSwrOptions = {}): SwrI
           }
           if (isAuthLost(err)) {
             set({ loading: false, error: err });
-            await fireAuthLost();
+            await fireAuthLost(err);
             return;
           }
           set({ loading: false, error: err, offline: isOfflineError(err), stale: state.data !== undefined });
           return;
         }
         if (controller.signal.aborted || gen !== generation) return;
+        authLostFired = false; // auth is good again: a later refusal is a new episode
         const prev = state.data;
         const prevAt = state.updatedAt ?? 0;
         const wasCached = state.fromCache;
@@ -179,12 +180,12 @@ export const createSwr = ((cache: CacheStore, opts: CreateSwrOptions = {}): SwrI
     return handle;
   }
 
-  async function fireAuthLost(): Promise<void> {
+  async function fireAuthLost(err?: unknown): Promise<void> {
     if (authLostFired) return;
     authLostFired = true;
     await swr.purge();
     try {
-      opts.onAuthLost?.();
+      opts.onAuthLost?.(err);
     } catch {
       /* host callback must not break the cache */
     }

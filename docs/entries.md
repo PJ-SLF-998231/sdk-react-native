@@ -8,7 +8,7 @@ fallback or a clear `ShelfMissingPeerError` when absent.
 
 | Entry | Main exports | Peers | Native config | Reaches (source areas) |
 |---|---|---|---|---|
-| `.` | `createShelfClient`, `ShelfProvider`, `useShelf`, `clearCache`, `clearAll`, `registerClearAllHook`, `createCache`, `createSwr`, errors, theme tokens | none | none | core, cache, provider, theme |
+| `.` | `createShelfClient`, `ShelfProvider`, `useShelf`, `clearCache`, `clearAll`, `registerClearAllHook`, `createCache`, `createSwr`, errors, `getAuthSession` / `createAuthSession` / `credentialFingerprint`, theme tokens | none | none | core, cache, provider, theme |
 | `/camera` | `CameraButton`, `useCaptureUpload`, `createPhotoCaptureAdapter`, `createScanAdapter` | needs `expo-image-picker` for `mode="photo"`; needs `react-native-document-scanner-plugin` for `mode="scan"` (dev build); optional `@react-native-community/netinfo` | camera permission (iOS `NSCameraUsageDescription`, Android `CAMERA`) | core, cache, provider, theme, upload, shared, storage (memory) |
 | `/picker` | `DocumentPickerButton`, `PhotoLibraryButton` | needs `expo-document-picker` (documents) / `expo-image-picker` (photo library); optional netinfo | iOS `NSPhotoLibraryUsageDescription` (library); none for documents | same as camera |
 | `/upload` | `createOutbox`, `useUpload`, `useOutbox`, `useOnlineStatus`, `UploadStatusBadge`, `OfflineBanner` (both show the pause reason), `OutboxPauseReason` | optional `@react-native-community/netinfo` | none | core, cache, provider, storage, theme |
@@ -34,6 +34,17 @@ Plain `clearCache()` never touches `shelf:outbox:` keys.
 
 On a 401 / `not_configured` the outbox keeps its queue and pauses (`pauseReason` `'auth'` | `'not_configured'`); only
 the read cache is purged. See the README, "Storage, caching and sign-out" and Troubleshooting.
+
+## Auth episodes (`core/session.ts`)
+
+`onAuthLost` is once per auth-loss episode. The state lives in `core` (`session.ts`, `fingerprint.ts`) so every entry can use
+it without a new graph edge: `createShelfClient` creates one `AuthSession` per client and binds it in a `WeakMap`
+(`getAuthSession(client)`); the client reports each 401 / 503 `not_configured` and each success; the provider
+(`useBuild`) and the outbox subscribe to it with `onAuthLost(() => latestCallback)` instead of the client's own callback,
+so an injected client and shared clients behave the same. The outbox also reports refusals that come through a custom
+`upload` transport and calls `session.resume()` from `resume()`. The episode ends on a success that began after it opened,
+`resume()`, or a change of `credentialFingerprint(getHeaders())` (pure-JS SHA-256 over the header names/values, 16 hex
+chars; the credential is never stored). See the README, "One onAuthLost per episode".
 
 ## Peer to entry
 

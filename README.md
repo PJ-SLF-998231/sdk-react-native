@@ -55,6 +55,8 @@ app  --(baseUrl + getHeaders(): your session token)-->  your proxy  --(Authoriza
 - If the key is revoked the proxy answers `503 { code: 'not_configured' }` (or Shelf answers 401). The SDK treats both as
   "authorisation lost": `onAuthLost` fires, the read cache is purged and the upload queue **pauses and keeps every
   unsent file** (see [Troubleshooting](#troubleshooting) and [Sign-out](#storage-caching-and-sign-out)).
+  `onAuthLost` fires **once per auth-loss episode**, not once per failing request (see
+  [One onAuthLost per episode](#one-onauthlost-per-episode)).
 
 ### Minimal Express proxy
 
@@ -203,7 +205,7 @@ function QueueList() {
 stops draining and pauses: `snapshot.paused` is true and `snapshot.pauseReason` is `'auth'` (401, label "Needs sign-in")
 or `'not_configured'` (label "Not connected"); `'manual'` is your own `pause()`. Every unsent item stays in memory and in
 storage, with its file URI and `client_ref`; running uploads are aborted and go back to pending. `onAuthLost` fires once
-for the pause, not once per item. `UploadStatusBadge paused={snapshot.pauseReason}` and
+for the episode, not once per item. `UploadStatusBadge paused={snapshot.pauseReason}` and
 `OfflineBanner pauseReason={snapshot.pauseReason} pendingCount={...}` show it. The pause is not persisted: after an app
 restart the queue loads all items and the first attempt either works (valid token) or pauses again, so nothing is lost
 and nothing is stuck.
@@ -212,7 +214,7 @@ To continue, fix the credential (the user signs in again, or the key is restored
 `resume()` (from `useOutbox()` / `useUpload()` / the outbox). `getHeaders` runs before every request, so a refreshed
 token is picked up by the next attempt; there is no polling. `resume()` drains the kept items once each: a file whose
 earlier attempt reached the server is re-sent with the same `client_ref`, so it is not duplicated. If the credential is
-still refused the queue pauses again and `onAuthLost` fires again. Only sign-out (`clearAll()`) discards the queue.
+still refused the queue pauses again and `onAuthLost` fires again (`resume()` ends the episode, so this is a new one). Only sign-out (`clearAll()`) discards the queue.
 
 With a persistent `storage` the queue survives an app restart. Without one it is memory-only. NetInfo makes uploads
 wait while offline and retry on reconnect; without it the device is assumed always online.
@@ -384,6 +386,37 @@ How it reaches `/documents` and `/upload` without breaking the entry graph: the 
 entries register themselves with it (`registerClearAllHook`) when they are loaded, so `camera`, `picker` and `upload` do
 not import `documents`. An app that never loads `/documents` simply has no default thumbnail cache to clear.
 
+## One onAuthLost per episode
+
+A burst of requests with a dead credential (ten list fetches, three uploads, a thumbnail grid) all fail with 401 or the
+proxy's 503 `not_configured`. The host's `onAuthLost` is called **once**, not once per request.
+
+- An **episode** starts at the first 401 / 503 `not_configured` seen through a client. While it is open, further refusals
+  still reject to their own callers (and keep the outbox paused) but do not call `onAuthLost` again.
+- It **ends** when auth is known good again: a successful authenticated request that began after the episode opened, an
+  explicit `resume()` (the outbox's, or `getAuthSession(client).resume()`), or `getHeaders` returning a different
+  credential. A refusal after that is a new episode and calls `onAuthLost` again.
+- The state is keyed by the **client object**, so it holds for a client you inject (`client={...}` on a provider or any
+  entry, `createOutbox({ client })`), for two `<ShelfProvider>`s or components sharing that client, and for the outbox and
+  the hooks together. A callback function passed to several of them is called once; distinct callbacks are called once each.
+  Share the client itself: a copy (`{ ...client }`) is a different client with its own episode.
+- "Different credential" is decided by a **fingerprint** of what `getHeaders` returns: SHA-256 over the header names and
+  values, truncated to 64 bits (16 hex chars). The credential is never stored or logged; only the fingerprint is kept, in memory.
+
+```ts
+import { getAuthSession, credentialFingerprint } from '@pj-slf-998231/sdk-react-native';
+
+const session = getAuthSession(client);
+session.onEpisode((e) => console.log(e.type));        // 'start' | 'end' (cause: success | resume | credential)
+session.active;                                         // the open episode (reason, error, fingerprint) or null
+session.reportAuthFailure(error);                       // for your own transport; true when it opened an episode
+session.reportSuccess();                                // ends the episode
+session.resume();                                       // the host fixed the credential
+credentialFingerprint({ Authorization: token });        // 16 hex chars, non-reversible
+```
+
+The outbox pause is not persisted yet; a restart begins with no open episode.
+
 ## Theme
 
 Light by default. Dark is opt-in, and `'system'` follows the device only when you ask for it.
@@ -451,7 +484,7 @@ missing and Metro could not treat it as optional. Install that peer, or open an 
 
 **Everything is signed out / the queue stopped (401).** A 401, or the proxy's `503 not_configured`, means the integration
 key was refused or revoked. The SDK purges its cached data, pauses the queue (`pauseReason` `'auth'` or
-`'not_configured'`) and calls `onAuthLost` once. **Queued, unsent files are kept**, in memory and in storage; no file is
+`'not_configured'`) and calls `onAuthLost` once per episode (see [One onAuthLost per episode](#one-onauthlost-per-episode)). **Queued, unsent files are kept**, in memory and in storage; no file is
 lost. Fix the credential (sign in again, or restore the key on the server), then call `resume()` (from `useOutbox()` /
 `useUpload()`) and the kept files upload, each once. Only `clearAll()` on sign-out discards them. Your own proxy
 should return 401 only for an expired app session (refresh the token in `getHeaders` and retry) and never for a problem
