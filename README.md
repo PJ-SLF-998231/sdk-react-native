@@ -44,3 +44,40 @@ const outbox = createOutbox({ client, storage, scope: userId });  // headless, n
 - **Sharing.** `useOutbox`/`useUpload` share one outbox per client + storage + scope, so every screen sees the same
   queue and uploads continue when a screen unmounts. With `baseUrl` and no provider each hook builds its own client, so
   mount a `ShelfProvider` (or pass one `client`) when more than one component enqueues.
+
+## Camera and picker (U4)
+
+Two small entries that put a file into Shelf. Neither pulls in folder, document or list code (`npm run check:size`
+enforces it and prints each entry's size).
+
+```tsx
+import { CameraButton } from '@pj-slf-998231/sdk-react-native/camera';
+import { DocumentPickerButton, PhotoLibraryButton } from '@pj-slf-998231/sdk-react-native/picker';
+
+<CameraButton mode="photo" folderId={folderId} onUploaded={(doc) => ...} onError={(e) => ...} />
+<CameraButton mode="scan" folderId={folderId} />
+<DocumentPickerButton multiple type={['application/pdf', 'image/*']} folderId={folderId} />
+<PhotoLibraryButton multiple folderId={folderId} />
+```
+
+Each works inside `<ShelfProvider>` or with `client` / `baseUrl` + `getHeaders`. Common props: `folderId`, `onCaptured(file)`,
+`onUploaded(result)`, `onError(err)`, `label`, `icon`, `theme`, `disabled`, and `children` (a node for the label, or a render
+prop `({ onPress, state, disabled }) => node` to draw the whole button). `useCaptureUpload({ adapter, ... })` is the headless
+version (`capture()`, `state`, `denied`, `openSettings()`, `dismiss()`).
+
+- **Offline-safe by default.** Captured files go to the U3 outbox (persisted first, retried, `client_ref` for idempotency),
+  so a photo taken on a train still arrives. `uploadMode="direct"` uploads at once instead; a failure then only reaches
+  `onError`. In outbox mode `onUploaded` fires when the queued upload finishes, which can be much later, and only while
+  the component using the hook is mounted; the queue itself keeps going either way (watch it with `useOutbox`).
+- **No base64.** Adapters hand over file URIs (`file://`), which the networking layer streams.
+- **Permissions.** A refused camera permission puts the button in `denied`: it explains, offers "Open Settings"
+  (`Linking.openSettings()`) and "Not now", and calls `onError(ShelfPermissionDeniedError)`. Hide the notice with
+  `hideDenied`.
+- **Optional peers, loaded lazily:** photo uses `expo-image-picker`, scan uses `react-native-document-scanner-plugin`
+  (needs a development build, not Expo Go), documents use `expo-document-picker`, the photo library uses
+  `expo-image-picker`. A missing one throws `ShelfMissingPeerError` (`packageName`, `installCommand`) when the button is
+  used, not at import or render, and the button shows the message and calls `onError`.
+- **Your own source (bare RN, expo-camera).** Pass `adapter={{ capture: async (request) => [{ uri, name, type }] }}`;
+  return `[]` for cancel and throw `ShelfPermissionDeniedError` for a refused permission. `expo-camera` is not wrapped
+  because it needs a viewfinder screen of your own.
+- A multi-page scan is uploaded as one image per page (no PDF assembly in the SDK).

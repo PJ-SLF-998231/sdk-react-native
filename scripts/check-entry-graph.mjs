@@ -9,11 +9,17 @@ const src = join(root, "src");
 const ENTRIES = ["camera", "picker", "upload", "folders", "documents", "document", "hooks", "storage", "theme", "storage/asyncstorage", "storage/sqlite"];
 const FORBIDDEN_SPECIFIERS = [/^react-dom($|\/)/, /indexeddb/i, /\.css$/i];
 const DOM_IN_BUNDLE = [/\bindexedDB\b/, /\bIDB(Database|Factory|Request|Transaction)\b/, /\bdocument\.(createElement|getElementById|querySelector|body|head)\b/, /\bwindow\.(addEventListener|location|localStorage)\b/, /\blocalStorage\b/];
-// Code areas the camera entry must not reach.
-const CAMERA_FORBIDDEN_DIRS = ["folders", "documents", "document", "hooks", "storage"];
+// camera and picker may reach only these areas (plus themselves): the client (core), caching and the provider that
+// upload needs, theme, upload, and the small shared capture helpers. Everything else (folders, documents, document,
+// hooks, the storage adapters) is list/document code and must stay out of their bundles.
+const CAPTURE_ENTRIES = { camera: "picker", picker: "camera" };
+const CAPTURE_ALLOWED_AREAS = new Set(["core", "cache", "provider", "theme", "upload", "shared"]);
+// storage/ is allowed only for what upload's default (memory) adapter needs; asyncstorage and sqlite stay out.
+const CAPTURE_ALLOWED_STORAGE_FILES = new Set(["storage/memory.ts", "storage/types.ts"]);
 const UPLOAD_FORBIDDEN_DIRS = ["folders", "documents", "document", "camera", "picker"];
 // Explicit allow-list: "<entry> -> <area>" edges that are permitted. Keep empty unless justified.
 const ALLOW = new Set([]);
+const { gzipSync } = await import("node:zlib");
 
 const importRe = /(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|import\s*['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)|require\(\s*['"]([^'"]+)['"]\s*\)/g;
 
@@ -46,8 +52,33 @@ function graph(entryFile) {
   return { files, bare };
 }
 
+// Names that exist only in list/document code; if one shows up in a camera/picker build, the graph leaked.
+const LIST_CODE_MARKERS = ["ShelfFolders", "ShelfDocuments", "ShelfDocument", "useFolders", "useDocuments", "useDocument", "FolderList", "DocumentList"];
+
+// The built entry plus the shared chunks it imports (relative imports/requires in dist).
+function builtGraph(entryJs) {
+  const seen = new Set();
+  const stack = [entryJs];
+  let bytes = 0;
+  const all = [];
+  while (stack.length) {
+    const f = stack.pop();
+    if (seen.has(f)) continue;
+    seen.add(f);
+    const buf = readFileSync(f);
+    bytes += buf.length;
+    all.push(buf);
+    for (const m of buf.toString("utf8").matchAll(/(?:from|import)\s*["'](\.[^"']+)["']/g)) {
+      const r = resolve(dirname(f), m[1]);
+      if (existsSync(r) && statSync(r).isFile()) stack.push(r);
+    }
+  }
+  return { files: seen, bytes, gzip: gzipSync(Buffer.concat(all)).length };
+}
+
 const errors = [];
 const rows = [];
+const areaReports = [];
 for (const entry of ["index", ...ENTRIES]) {
   // An entry is src/<entry>/index.ts, or src/<entry>.ts for subpaths such as storage/sqlite.
   const file = entry === "index" ? join(src, "index.ts") : [join(src, entry, "index.ts"), join(src, `${entry}.ts`)].find(existsSync) ?? join(src, entry, "index.ts");
@@ -62,12 +93,14 @@ for (const entry of ["index", ...ENTRIES]) {
     const code = readFileSync(built, "utf8");
     for (const re of DOM_IN_BUNDLE) if (re.test(code)) errors.push(`${entry}: built bundle matches ${re}`);
   }
-  if (entry === "camera") {
+  if (entry in CAPTURE_ENTRIES) {
     for (const f of files) {
-      const area = relative(src, f).split("/")[0];
-      if (CAMERA_FORBIDDEN_DIRS.includes(area) && !ALLOW.has(`camera -> ${area}`)) {
-        errors.push(`camera reaches ${relative(root, f)} (area "${area}") without allow-list entry`);
-      }
+      const rel = relative(src, f);
+      const area = rel.split("/")[0];
+      if (area === entry) continue;
+      if (area === CAPTURE_ENTRIES[entry]) { errors.push(`${entry} reaches ${relative(root, f)} (the ${area} entry)`); continue; }
+      if (area === "storage" ? CAPTURE_ALLOWED_STORAGE_FILES.has(rel) : CAPTURE_ALLOWED_AREAS.has(area)) continue;
+      if (!ALLOW.has(`${entry} -> ${area}`)) errors.push(`${entry} reaches ${relative(root, f)} (area "${area}") without allow-list entry`);
     }
   }
   if (entry === "upload") {
@@ -78,11 +111,22 @@ for (const entry of ["index", ...ENTRIES]) {
     }
   }
   const out = join(root, "dist", `${entry}.js`);
-  rows.push({ entry, files: files.size, bytes: existsSync(out) ? statSync(out).size : null });
+  const srcBytes = [...files].reduce((n, f) => n + statSync(f).size, 0);
+  const bg = existsSync(out) ? builtGraph(out) : null;
+  if (entry in CAPTURE_ENTRIES && bg) {
+    for (const f of bg.files) {
+      const text = readFileSync(f, "utf8");
+      for (const marker of LIST_CODE_MARKERS) if (text.includes(marker)) errors.push(`${entry}: built file ${relative(root, f)} contains list/document code (${marker})`);
+    }
+  }
+  if (entry in CAPTURE_ENTRIES) areaReports.push({ entry, areas: [...new Set([...files].map((f) => relative(src, f).split("/")[0]))].sort() });
+  rows.push({ entry, files: files.size, srcBytes, bytes: existsSync(out) ? statSync(out).size : null, builtFiles: bg?.files.size ?? null, builtBytes: bg?.bytes ?? null, gz: bg?.gzip ?? null });
 }
 
-console.log("entry".padEnd(12), "src files".padEnd(10), "built bytes (esm)");
-for (const r of rows) console.log(r.entry.padEnd(12), String(r.files).padEnd(10), r.bytes ?? "n/a (not built)");
+console.log("entry".padEnd(22), "src files".padEnd(10), "src bytes".padEnd(10), "built files".padEnd(12), "built bytes".padEnd(12), "gzip");
+for (const r of rows) console.log(r.entry.padEnd(22), String(r.files).padEnd(10), String(r.srcBytes).padEnd(10), String(r.builtFiles ?? "n/a").padEnd(12), String(r.builtBytes ?? "n/a (not built)").padEnd(12), r.gz ?? "");
+console.log("\ncamera/picker reach only these source areas (folders, documents, document, hooks and the storage adapters are excluded):");
+for (const r of areaReports) console.log(`  ${r.entry.padEnd(8)} ${r.areas.join(", ")}`);
 if (rows.some((r) => r.bytes === null)) errors.push("dist is missing; run `npm run build` first");
 if (errors.length) { console.error("\nFAILED:\n" + errors.map((e) => "  " + e).join("\n")); process.exit(1); }
 console.log("\nentry graph OK");
