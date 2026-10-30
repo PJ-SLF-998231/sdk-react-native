@@ -1,0 +1,30 @@
+{
+ "version": 1,
+ "generated_at": "2026-10-08T09:00:04Z",
+ "source": {
+  "text_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "parser_id": null,
+  "parser_revision": null
+ },
+ "blocks": [
+  {
+   "type": "parties",
+   "props": {
+    "from": {
+     "name": "Acme Ltd",
+     "lines": [
+      "1 Main Rd",
+      "Cape Town"
+     ],
+     "source": {
+      "page": 1,
+      "line": 12
+     }
+    },
+    "to": {
+     "name": "Jo Bloggs"
+    }
+   }
+  }
+ ]
+}

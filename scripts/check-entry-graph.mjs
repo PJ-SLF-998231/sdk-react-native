@@ -24,6 +24,10 @@ const BROWSE_FORBIDDEN_AREAS = {
   folders: ["camera", "picker", "document", "documents", "upload"],
   documents: ["camera", "picker", "document", "folders", "upload"],
   hooks: ["camera", "picker", "document", "folders", "documents"],
+  // document: the detail screen. It builds its own preview from client.thumbnailUrl/authedSource instead of importing the
+  // documents area's Thumbnail/cache (that would pull expo-file-system and the list code into a detail-only bundle), and
+  // imports hooks/useDocument directly, not hooks/index (which re-exports the upload outbox hooks). No allow-list entries.
+  document: ["camera", "picker", "upload", "folders", "documents"],
 };
 // Names that must not appear in the built browsing entries (capture code and its optional peers), and that must appear
 // in the entry that owns them, so the marker check can never pass vacuously on an empty bundle.
@@ -32,6 +36,7 @@ const REQUIRED_MARKERS = {
   folders: ["FolderList", "FolderCard", "FolderBreadcrumb", "FolderHeader"],
   documents: ["DocumentList", "DocumentRow", "DocumentCard", "createFileThumbnailCache", 'require("expo-file-system/legacy")', 'require("@shopify/flash-list")'],
   hooks: ["useFolders", "useFolder", "useDocuments", "useDocumentText", "useDocumentSite", "useOutbox"],
+  document: ["DocumentScreen", "DocumentTextView", "DocumentPreview", "DocumentContentView", "SiteRenderer", 'require("react-native-gesture-handler")', 'require("react-native-reanimated")'],
   camera: ["CameraButton"],
   picker: ["DocumentPickerButton"],
 };
@@ -71,7 +76,7 @@ function graph(entryFile) {
 }
 
 // Names that exist only in list/document code; if one shows up in a camera/picker build, the graph leaked.
-const LIST_CODE_MARKERS = ["FolderList", "FolderCard", "FolderBreadcrumb", "FolderHeader", "DocumentList", "DocumentRow", "DocumentCard", "useFolders", "useFolder", "useDocuments", "useDocumentText", "useDocumentSite", "createFileThumbnailCache", "createMemoryThumbnailCache", "@shopify/flash-list", "expo-file-system"];
+const LIST_CODE_MARKERS = ["FolderList", "FolderCard", "FolderBreadcrumb", "FolderHeader", "DocumentList", "DocumentRow", "DocumentCard", "useFolders", "useFolder", "useDocuments", "useDocumentText", "useDocumentSite", "createFileThumbnailCache", "createMemoryThumbnailCache", "@shopify/flash-list", "expo-file-system", "DocumentScreen", "DocumentTextView", "DocumentPreview", "DocumentContentView"];
 
 // The built entry plus the shared chunks it imports (relative imports/requires in dist).
 function builtGraph(entryJs) {

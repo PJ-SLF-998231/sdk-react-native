@@ -1,0 +1,56 @@
+{
+ "version": 1,
+ "generated_at": "2026-10-08T09:00:04Z",
+ "source": {
+  "text_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "parser_id": null,
+  "parser_revision": null
+ },
+ "blocks": [
+  {
+   "type": "hero",
+   "props": {
+    "title": "Invoice INV-204 from Acme",
+    "kind": "Invoice",
+    "issuer": "Acme Ltd",
+    "date": "2026-10-08"
+   }
+  },
+  {
+   "type": "chart",
+   "props": {
+    "series": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "type": "summary",
+   "props": {}
+  },
+  {
+   "props": {}
+  },
+  {
+   "type": "summary",
+   "props": {
+    "text": "Invoice for October consulting, due 2026-11-07. See https://pay.example.com/inv-204 to pay.",
+    "source": {
+     "page": 1,
+     "line": 12
+    }
+   }
+  },
+  {
+   "type": "summary",
+   "props": {
+    "text": "Invoice for October consulting, due 2026-11-07. See https://pay.example.com/inv-204 to pay.",
+    "source": {
+     "page": 1,
+     "line": 12
+    }
+   }
+  }
+ ]
+}

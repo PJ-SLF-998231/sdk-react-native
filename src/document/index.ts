@@ -1,1 +1,16 @@
+export { DocumentScreen } from './DocumentScreen';
+export type { DocumentScreenProps } from './DocumentScreen';
+export { DocumentTextView } from './DocumentTextView';
+export type { DocumentTextViewProps } from './DocumentTextView';
+export { DocumentPreview, availablePreviewSizes, defaultPreviewSize } from './DocumentPreview';
+export type { DocumentPreviewProps } from './DocumentPreview';
+export { DocumentContentView, SiteRenderer } from './DocumentContentView';
+export type { DocumentContentViewProps, SiteRendererProps } from './DocumentContentView';
+export { parseSiteSpec, BLOCK_ORDER } from './siteSpec';
+export type { Block, BlockType, ParsedSite, UnknownBlockReport, SourceRef } from './siteSpec';
+export { chunkText } from './textChunks';
+export type { TextChunk } from './textChunks';
+export { resolveTabs, activeTab, DEFAULT_TABS } from './tabs';
+export type { DocumentTab } from './tabs';
+export { useDocument, useDocumentText, useDocumentSite } from '../hooks/useDocument';
 export const documentEntry = "document";

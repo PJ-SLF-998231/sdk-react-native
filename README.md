@@ -133,3 +133,38 @@ network pending. Result in jest (react-test-renderer on Node, so a floor rather 
   The test asserts < 100 ms and < 40 mounted rows, and prints the numbers.
 - Not measured here (needs a device): JS bundle load, the AsyncStorage / SQLite read of the persisted entry (the memory
   adapter has no I/O), native image decoding, and scroll frame rate.
+
+## Document screen (U6)
+
+```tsx
+import { DocumentScreen } from '@pj-slf-998231/sdk-react-native/document';
+
+<DocumentScreen
+  documentId={id}
+  baseUrl="https://your-proxy.example.com/api/shelf"   // or client={client}, or render inside <ShelfProvider>
+  getHeaders={() => ({ Authorization: `Bearer ${token}` })}
+  tabs={['text', 'preview', 'content']}   // ordered subset; this is the default order
+  initialTab="preview"
+  showPreviewSizes
+  onUnknownBlock={(r) => log(r)}
+/>
+```
+
+- **Tabs.** Text, Preview and Content. `tabs` picks and orders them. Content is shown only when the document's
+  `has_site` is true (so it is absent while the document is still loading). `initialTab` applies when that tab is visible.
+- **Standalone pieces** (each takes `documentId` plus `client` or `baseUrl` + `getHeaders`, or uses the provider):
+  `DocumentTextView` (selectable, scales with the system font size, cut into chunks on a virtualised list so very long
+  text does not freeze), `DocumentPreview` (thumbnail endpoint at the chosen size, `showSizes` lists `preview_sizes`; a
+  file with no rendition shows a message and "Open original" through `Linking`), `DocumentContentView` (the generated
+  site) and `SiteRenderer` (the same renderer for a spec you already hold).
+- **Site spec.** All eight block types of `document-site.schema.json` v1 are drawn (hero, summary, key facts, amount,
+  parties, timeline, table, source) in the fixed layout order. A block type this version does not know, a known block
+  with unusable props, a repeated single-use block or a spec of another version is skipped and reported once through
+  `onUnknownBlock({ type, index, reason, block })`; the rest still renders. `http(s)` links in the text open through
+  `Linking` (or `onOpenLink`). Pending states: `none` with an expected site and `building` show "Content is being
+  prepared" and are re-read every `pollMs` (default 10 s); a stale or rebuilding site with a spec shows "Updating…".
+- **Pinch to zoom** is on the Preview image when the optional peers `react-native-gesture-handler` and
+  `react-native-reanimated` are installed (the host renders a `GestureHandlerRootView`); without them the image is plain.
+- **Entry graph.** `document` imports core, cache, provider, theme, shared and `hooks/useDocument` only. It builds its
+  picture from `client.thumbnailUrl` and `client.authedSource` rather than importing the `documents` thumbnail cache (that
+  would pull `expo-file-system` and the list code into a detail-only bundle), and it never reaches camera, picker or upload.

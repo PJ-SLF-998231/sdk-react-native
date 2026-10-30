@@ -161,7 +161,9 @@
     "expo-sqlite": "*",
     "react": ">=18",
     "react-native": ">=0.74",
-    "react-native-document-scanner-plugin": "*"
+    "react-native-document-scanner-plugin": "*",
+    "react-native-gesture-handler": "*",
+    "react-native-reanimated": "*"
   },
   "peerDependenciesMeta": {
     "expo-image-picker": {
@@ -192,6 +194,12 @@
       "optional": true
     },
     "@shopify/flash-list": {
+      "optional": true
+    },
+    "react-native-gesture-handler": {
+      "optional": true
+    },
+    "react-native-reanimated": {
       "optional": true
     }
   },

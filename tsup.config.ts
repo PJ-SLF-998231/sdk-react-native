@@ -14,5 +14,5 @@ export default defineConfig({
   sourcemap: false,
   target: "es2020",
   splitting: true,
-  external: [/^react($|\/)/, /^react-native($|\/)/, /^expo/, /^@react-native/, /^@shopify\//, "react-native-document-scanner-plugin"],
+  external: [/^react($|\/)/, /^react-native($|\/)/, /^expo/, /^@react-native/, /^@shopify\//, "react-native-document-scanner-plugin", "react-native-gesture-handler", "react-native-reanimated"],
 });
