@@ -105,6 +105,26 @@
         "default": "./dist/storage.cjs"
       }
     },
+    "./storage/asyncstorage": {
+      "import": {
+        "types": "./dist/storage/asyncstorage.d.ts",
+        "default": "./dist/storage/asyncstorage.js"
+      },
+      "require": {
+        "types": "./dist/storage/asyncstorage.d.cts",
+        "default": "./dist/storage/asyncstorage.cjs"
+      }
+    },
+    "./storage/sqlite": {
+      "import": {
+        "types": "./dist/storage/sqlite.d.ts",
+        "default": "./dist/storage/sqlite.js"
+      },
+      "require": {
+        "types": "./dist/storage/sqlite.d.cts",
+        "default": "./dist/storage/sqlite.cjs"
+      }
+    },
     "./theme": {
       "import": {
         "types": "./dist/theme.d.ts",

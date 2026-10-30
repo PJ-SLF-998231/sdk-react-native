@@ -6,8 +6,9 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const src = join(root, "src");
-const ENTRIES = ["camera", "picker", "upload", "folders", "documents", "document", "hooks", "storage", "theme"];
+const ENTRIES = ["camera", "picker", "upload", "folders", "documents", "document", "hooks", "storage", "theme", "storage/asyncstorage", "storage/sqlite"];
 const FORBIDDEN_SPECIFIERS = [/^react-dom($|\/)/, /indexeddb/i, /\.css$/i];
+const DOM_IN_BUNDLE = [/\bindexedDB\b/, /\bIDB(Database|Factory|Request|Transaction)\b/, /\bdocument\.(createElement|getElementById|querySelector|body|head)\b/, /\bwindow\.(addEventListener|location|localStorage)\b/, /\blocalStorage\b/];
 // Code areas the camera entry must not reach.
 const CAMERA_FORBIDDEN_DIRS = ["folders", "documents", "document", "hooks", "storage"];
 // Explicit allow-list: "<entry> -> <area>" edges that are permitted. Keep empty unless justified.
@@ -47,11 +48,18 @@ function graph(entryFile) {
 const errors = [];
 const rows = [];
 for (const entry of ["index", ...ENTRIES]) {
-  const file = entry === "index" ? join(src, "index.ts") : join(src, entry, "index.ts");
+  // An entry is src/<entry>/index.ts, or src/<entry>.ts for subpaths such as storage/sqlite.
+  const file = entry === "index" ? join(src, "index.ts") : [join(src, entry, "index.ts"), join(src, `${entry}.ts`)].find(existsSync) ?? join(src, entry, "index.ts");
   if (!existsSync(file)) { errors.push(`missing source entry ${relative(root, file)}`); continue; }
   const { files, bare } = graph(file);
   for (const spec of bare) {
     if (FORBIDDEN_SPECIFIERS.some((re) => re.test(spec))) errors.push(`${entry}: forbidden import "${spec}"`);
+  }
+  // Built output must not touch the DOM or IndexedDB (React Native has neither).
+  const built = join(root, "dist", `${entry}.js`);
+  if (existsSync(built)) {
+    const code = readFileSync(built, "utf8");
+    for (const re of DOM_IN_BUNDLE) if (re.test(code)) errors.push(`${entry}: built bundle matches ${re}`);
   }
   if (entry === "camera") {
     for (const f of files) {
