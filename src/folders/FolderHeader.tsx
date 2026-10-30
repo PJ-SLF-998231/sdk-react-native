@@ -17,7 +17,7 @@ export interface FolderHeaderProps extends ShelfConnectionProps {
   rootLabel?: string;
   /** Navigate to a crumb (null = root). Without it the breadcrumb is not interactive. */
   onNavigate?: (folder: ShelfFolder | null) => void;
-  /** "New folder" button. Rendered only when given: integration keys have no folder writes. */
+  /** "New folder" button. Rendered only when given: folder writes need a read_write key. */
   onCreateFolder?: () => void;
   /** Extra actions at the right (a camera button, an upload badge, ...). */
   actions?: React.ReactNode;

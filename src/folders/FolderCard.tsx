@@ -10,7 +10,7 @@ export const FOLDER_CARD_HEIGHT = 64;
 export interface FolderCardProps {
   folder: ShelfFolder;
   onPress?: (folder: ShelfFolder) => void;
-  /** Folder-write actions. Integration keys cannot write folders, so these render only when you pass the handler. */
+  /** Folder-write actions. They need a read_write key, so they render only when you pass the handler. */
   onRename?: (folder: ShelfFolder) => void;
   onDelete?: (folder: ShelfFolder) => void;
   theme?: ShelfTheme;

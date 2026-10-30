@@ -118,14 +118,19 @@ export interface UpdateFileInput {
   folder_id?: string;
 }
 
+/**
+ * POST /integration/folders. Needs a `read_write` key. `parent_id` is the key's folder or a folder below it; leave it
+ * out to create directly in the key's folder. The API rejects `null` (400): folders stay inside the key's folder.
+ */
 export interface CreateFolderInput {
   name: string;
-  parent_id?: string | null;
+  parent_id?: string;
 }
 
+/** PATCH /integration/folders/{id}: send `name`, `parent_id` or both (none is a 400). `parent_id` cannot be null. */
 export interface UpdateFolderInput {
   name?: string;
-  parent_id?: string | null;
+  parent_id?: string;
 }
 
 export type SiteStatus = 'none' | 'building' | 'ready' | 'failed';
