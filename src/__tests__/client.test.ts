@@ -90,7 +90,7 @@ test('updateFile, deleteFile and the folder writes', async () => {
   expect(m.calls[0]!.init.headers['Content-Type']).toBe('application/json');
   await expect(c.deleteFile('f1')).resolves.toBeUndefined();
   expect(m.calls[1]!.init.method).toBe('DELETE');
-  await c.createFolder({ name: 'N', parent_id: null });
+  await c.createFolder({ name: 'N' });
   expect(m.calls[2]!.url).toBe(`${c.baseUrl}/folders`);
   await c.updateFolder('n', { name: 'M' });
   expect(m.calls[3]!.url).toBe(`${c.baseUrl}/folders/n`);

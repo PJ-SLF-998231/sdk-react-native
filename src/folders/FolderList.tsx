@@ -15,7 +15,7 @@ export interface FolderListProps extends ShelfConnectionProps {
   /** Ignore the hierarchy and list every folder. */
   flat?: boolean;
   onPressFolder?: (folder: ShelfFolder) => void;
-  /** Folder-write handlers. The matching button renders only when its handler is given (integration keys cannot write folders). */
+  /** Folder-write handlers. The matching button renders only when its handler is given (folder writes need a read_write key). */
   onRenameFolder?: (folder: ShelfFolder) => void;
   onDeleteFolder?: (folder: ShelfFolder) => void;
   header?: React.ReactElement | null;

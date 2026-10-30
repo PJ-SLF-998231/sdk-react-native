@@ -46,15 +46,15 @@ handling) is pure `fetch` and is kept semantically identical so behaviour and er
 ## API coverage and a mismatch worth knowing
 
 The Shelf API's integration routes (`api/internal/integrations/reach.go`) are `GET /`, `GET /folders`, `GET /files`,
-`GET /files/{id}`, `POST /files`, `PATCH /files/{id}`, `DELETE /files/{id}`. The thumbnail, original and site routes
-come through the web SDK's proxy recipe. There is **no** integration route for creating, renaming or deleting
-folders and **no** separate text route:
+`GET /files/{id}`, `POST /files`, `PATCH /files/{id}`, `DELETE /files/{id}`, and (since the folder-write release)
+`POST /folders`, `PATCH /folders/{id}`, `DELETE /folders/{id}`. The thumbnail, original and site routes come through the
+web SDK's proxy recipe. There is **no** separate text route:
 
 - `getText(id)` reads `parsed_text` from `GET /files/{id}`.
-- `createFolder` / `updateFolder` / `deleteFolder` call `POST /folders`, `PATCH|DELETE /folders/{id}` (the owner
-  API's routes) as requested. They only work behind a credential or proxy that maps to those routes; with a
-  `shelf_ik_` integration key they reject with a `ShelfError` (404/403). They are documented as such on the types and the
-  UI built later must not offer folder writes for integration keys (the web SDK makes the same call).
+- `createFolder` / `updateFolder` / `deleteFolder` call the integration routes above (`read_write` keys only, subtree
+  scoped; see README "Folder writes" for the status codes). **Addendum:** this section first said the integration API
+  had no folder writes and that they would 404/403 with a `shelf_ik_` key. That was true when written and is no longer;
+  the contract is pinned by `src/__tests__/folderWrites.test.ts`. Folder-write UI is still opt-in through handlers.
 
 ## Optional peers
 

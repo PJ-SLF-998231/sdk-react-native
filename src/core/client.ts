@@ -41,13 +41,18 @@ export interface ShelfClient {
   /** DELETE /files/{id} */
   deleteFile(id: string, req?: RequestOptions): Promise<void>;
   /**
-   * POST /folders. Not reachable with an integration key (the integration API has no folder writes); it works
-   * only behind a proxy or credential that maps to the owner routes. Otherwise it rejects with a ShelfError (404/403).
+   * POST /folders (the integration API's `POST /integration/folders`). `read_write` keys only. Rejects with a
+   * ShelfError: 403 `forbidden` (read key), 404 `not_found` (parent outside the key's tree), 400 `invalid_input`
+   * (empty/long name, null parent), 409 `conflict` (sibling has the name, or nested past 64 levels).
    */
   createFolder(input: CreateFolderInput, req?: RequestOptions): Promise<ShelfFolder>;
-  /** PATCH /folders/{id}; same availability caveat as createFolder. */
+  /**
+   * PATCH /folders/{id}: rename, move, or both. As createFolder, plus 404 for a folder outside the key's tree
+   * (the same answer as one that does not exist), 403 `forbidden` for the key's own folder, and 409 for a move
+   * into itself or its own subtree.
+   */
   updateFolder(id: string, patch: UpdateFolderInput, req?: RequestOptions): Promise<ShelfFolder>;
-  /** DELETE /folders/{id}; same availability caveat as createFolder. */
+  /** DELETE /folders/{id}: the folder, its subfolders and their documents go to the owner's trash (204). 403 for the key's own folder, 404 outside the tree. */
   deleteFolder(id: string, req?: RequestOptions): Promise<void>;
   /** `size` is a preview size name as listed in `preview_sizes`: small, medium or large. */
   thumbnailUrl(id: string, size?: string | number): string;

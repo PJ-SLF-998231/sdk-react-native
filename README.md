@@ -68,7 +68,8 @@ import express from 'express';
 import { Readable } from 'node:stream';
 
 const UUID = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
-// Only the integration API's routes. Folder writes are deliberately absent (see Known limits).
+// Only the integration API's routes. The folder-write routes (last three) are optional: drop them if your app
+// never writes folders. They need a read_write key.
 const ALLOWED = [
   ['GET', /^\/?$/],
   ['GET', /^\/folders\/?$/],
@@ -80,6 +81,9 @@ const ALLOWED = [
   ['POST', /^\/files\/?$/], // multipart upload
   ['PATCH', new RegExp(`^/files/${UUID}/?$`)],
   ['DELETE', new RegExp(`^/files/${UUID}/?$`)],
+  ['POST', /^\/folders\/?$/], // folder writes, read_write keys only
+  ['PATCH', new RegExp(`^/folders/${UUID}/?$`)],
+  ['DELETE', new RegExp(`^/folders/${UUID}/?$`)],
 ];
 const FORWARD_REQUEST = ['content-type', 'content-length', 'accept', 'if-none-match', 'range', 'if-range'];
 const FORWARD_RESPONSE = ['content-type', 'content-length', 'content-disposition', 'etag', 'cache-control',
@@ -412,15 +416,19 @@ Short version of what matters in production:
 - **DocumentScreen**: tabs `text`, `preview`, `content` (`tabs`, `initialTab`); Content only when the document has a
   generated site; unknown site blocks are skipped and reported through `onUnknownBlock`.
 - **Folder writes** render only when you pass a handler (`FolderHeader.onCreateFolder`, `FolderList.onRenameFolder` /
-  `onDeleteFolder`).
+  `onDeleteFolder`). `client.createFolder` / `updateFolder` (rename, move) / `deleteFolder` call the integration API's
+  `POST /folders`, `PATCH /folders/{id}` and `DELETE /folders/{id}`. They need a `read_write` key (a read key gets
+  403 `forbidden`), work only inside the key's folder tree (anything outside is a 404 `not_found`, the same as a missing
+  folder), never touch the key's own folder (403), and answer 409 `conflict` for a duplicate sibling name, a move into
+  itself or nesting past 64 levels. Delete moves the folder and its documents to the owner's trash. `parent_id` cannot
+  be `null`; leave it out to create directly in the key's folder.
 
 ## Known limits
 
 - **No upload progress with `fetch`.** `progress` is 0 while uploading and 1 when done. Supply
   `upload: (call) => ...` (for example an `XMLHttpRequest` uploader calling `call.onProgress`) for a real bar.
-- **Folder writes need API support.** Integration keys have no folder create / rename / delete (and no per-folder read route;
-  `useFolder` derives from the list). The buttons are hidden unless you pass a handler, and `client.createFolder` etc.
-  only work behind a credential or proxy that maps to the owner API.
+- **No per-folder read route.** `useFolder` derives from the folder list. Folder-write buttons are hidden unless you
+  pass a handler, and the writes need a `read_write` key (see Folder writes above).
 - **Scan is one image per page.** A multi-page scan is uploaded as separate JPEG documents; there is no PDF assembly.
 - **Outbox `onUploaded` can be late** (it fires when the queued upload finishes) and only while the component is mounted.
 - Not measured on a device: JS bundle load time, AsyncStorage / SQLite read time, image decoding, scroll frame rate.
