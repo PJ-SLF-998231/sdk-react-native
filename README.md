@@ -60,18 +60,68 @@ app  --(baseUrl + getHeaders(): your session token)-->  your proxy  --(Authoriza
 
 ### Minimal Express proxy
 
-This is a sketch to adapt, not a drop-in. It authenticates the caller (replace `requireUser` with your own), allows only
-the integration routes, adds the key from the environment, and **streams** both directions so uploads are never buffered
-in memory. Mount it **before** `express.json()` so request bodies are still unread streams.
+This is a sketch to adapt, not a drop-in. Replace `requireUser` with your own session check.
+
+The proxy forwards `/api/shelf/<path>` to `${SHELF_API_URL}/api/v1/integration/<path>` and adds
+`Authorization: Bearer ${SHELF_INTEGRATION_KEY}`. It runs behind your own session check, allows only the integration
+routes, and **streams** both directions so uploads and originals are never buffered in memory. Mount it **before**
+`express.json()` so request bodies are still unread streams. The recipe is the same in `@pj-slf-998231/sdk` and
+`@pj-slf-998231/sdk-react-native`.
+
+Route table (anything else: 404, do not forward). The folder-write routes (the last three) need a `read_write` key;
+drop them if your integration never writes folders.
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| GET | `/` | key and folder info |
+| GET | `/folders` | folders reachable by the key |
+| GET | `/files?folder_id&limit&cursor&recursive` | list |
+| GET | `/files/{id}` | details and text |
+| GET | `/files/{id}/thumbnail?size` | image preview |
+| GET | `/files/{id}/site` | the document's generated site (404 when it has none) |
+| GET | `/files/{id}/original/{name}` | download; stream the body |
+| POST | `/files` | multipart: `file`, `folder_id`, `client_ref`, `on_duplicate`; stream the body |
+| PATCH | `/files/{id}` | rename or move (JSON) |
+| DELETE | `/files/{id}` | move to the Shelf trash |
+| POST | `/folders` | create a folder (JSON `{ name, parent_id }`) |
+| PATCH | `/folders/{id}` | rename or move a folder (JSON) |
+| DELETE | `/folders/{id}` | move a folder and everything in it to the Shelf trash |
+
+Header allowlist. Forward only these and drop everything else, in particular the caller's `Authorization`, `Cookie`
+and `Host`, and any `X-Forwarded-*`, `X-Real-IP` or `Fly-Client-IP` they send.
+
+- Request to Shelf: `Accept`, `Content-Type` (keeps the multipart boundary), `Content-Length`, `If-None-Match`, `Range`,
+  `If-Range`.
+- Response to the caller: `Content-Type`, `Content-Length`, `Content-Disposition`, `Content-Range`, `Accept-Ranges`,
+  `ETag`, `Last-Modified`, `Cache-Control`, `Vary`, `X-Content-Type-Options`, `Retry-After`.
+
+Why these: Shelf sends an `ETag` with thumbnails, originals and document sites (and, as it adds them, with listings and
+details) and answers a matching `If-None-Match` with `304` and no body, so pass the `304` through as it is.
+`Cache-Control` is `private` (or `no-store`) on everything; keep it, so no shared cache between your users stores one
+user's answer. Originals and thumbnails carry `X-Content-Type-Options: nosniff`. `Range` and `If-Range` are forwarded
+for originals; Shelf answers them with the whole file (`200`) today, and with `206` and `Content-Range` if it starts to
+honour them. A `429` carries `Retry-After` in seconds. Drop `Content-Length` when Shelf's answer had a
+`Content-Encoding`: `fetch` hands you the decoded body, so the length no longer matches.
+
+Errors the proxy produces itself:
+
+| Condition | Response |
+| --- | --- |
+| No valid user session | 401 (your own auth) |
+| `SHELF_API_URL` or `SHELF_INTEGRATION_KEY` unset, or Shelf answers 401 (key revoked, expired or invalid) | `503 {"code":"not_configured"}` (fail closed) |
+| Shelf unreachable or times out | 502 |
+| Method or path not in the route table | 404 |
+| Any other Shelf answer (304, 400, 403, 404, 409, 413, 415, 429, 5xx) | pass through the status, the allowed headers and the body |
+
+Rate limits. Shelf allows 600 `/integration` requests a minute per client address, and behind the proxy that address is
+the proxy's, so all your users share one budget. Rate-limit the route per user on your side and pass Shelf's `429` with
+its `Retry-After` through.
 
 ```js
 // shelf-proxy.mjs  (Node 18+, Express 4/5)
-import express from 'express';
 import { Readable } from 'node:stream';
 
 const UUID = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
-// Only the integration API's routes. The folder-write routes (last three) are optional: drop them if your app
-// never writes folders. They need a read_write key.
 const ALLOWED = [
   ['GET', /^\/?$/],
   ['GET', /^\/folders\/?$/],
@@ -87,9 +137,9 @@ const ALLOWED = [
   ['PATCH', new RegExp(`^/folders/${UUID}/?$`)],
   ['DELETE', new RegExp(`^/folders/${UUID}/?$`)],
 ];
-const FORWARD_REQUEST = ['content-type', 'content-length', 'accept', 'if-none-match', 'range', 'if-range'];
-const FORWARD_RESPONSE = ['content-type', 'content-length', 'content-disposition', 'etag', 'cache-control',
-  'x-content-type-options', 'content-range', 'accept-ranges', 'last-modified', 'vary'];
+const FORWARD_REQUEST = ['accept', 'content-type', 'content-length', 'if-none-match', 'range', 'if-range'];
+const FORWARD_RESPONSE = ['content-type', 'content-length', 'content-disposition', 'content-range', 'accept-ranges',
+  'etag', 'last-modified', 'cache-control', 'vary', 'x-content-type-options', 'retry-after'];
 
 const fail = (res, status, code, message) => res.status(status).set('Cache-Control', 'no-store').json({ error: code, code, message });
 
@@ -105,7 +155,7 @@ export async function shelfProxy(req, res) {
   if (!allowed(req.method, req.path)) return fail(res, 404, 'not_found', 'No such Shelf route');
 
   const base = (process.env.SHELF_API_URL ?? '').replace(/\/+$/, '');
-  const key = process.env.SHELF_INTEGRATION_KEY ?? ''; // server-side secret; never sent to the app
+  const key = process.env.SHELF_INTEGRATION_KEY ?? ''; // server-side secret; never sent to the browser or the app
   if (!base || !key) return fail(res, 503, 'not_configured', "Shelf isn't connected");
 
   const q = req.url.indexOf('?');
@@ -115,7 +165,7 @@ export async function shelfProxy(req, res) {
 
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), req.method === 'POST' ? 120_000 : 30_000);
-  res.on('close', () => { clearTimeout(timer); if (!res.writableFinished) ctrl.abort(); }); // app went away: stop upstream too
+  res.on('close', () => { clearTimeout(timer); if (!res.writableFinished) ctrl.abort(); }); // caller went away: stop upstream too
 
   let up;
   try {
@@ -127,25 +177,35 @@ export async function shelfProxy(req, res) {
     clearTimeout(timer);
     return fail(res, 502, 'unavailable', 'Shelf is unreachable');
   }
-  // Shelf refused the key: a configuration problem, never the app user's login problem. Tell the SDK so it stops.
+  // Shelf refused the key: a configuration problem, never the user's login problem. Tell the SDK so it stops.
   if (up.status === 401) { clearTimeout(timer); up.body?.cancel().catch(() => {}); return fail(res, 503, 'not_configured', "Shelf isn't connected"); }
 
-  res.status(up.status);
-  for (const h of FORWARD_RESPONSE) { const v = up.headers.get(h); if (v !== null) res.setHeader(h, v); }
+  res.status(up.status); // 304 included: it has no body
+  const decoded = up.headers.has('content-encoding'); // fetch decoded the body, so Shelf's length no longer applies
+  for (const h of FORWARD_RESPONSE) {
+    const v = up.headers.get(h);
+    if (v !== null && !(decoded && h === 'content-length')) res.setHeader(h, v);
+  }
   if (!up.body) return res.end();
   const body = Readable.fromWeb(up.body);
   body.on('error', () => res.destroy());
   body.pipe(res); // stream the response (thumbnails, originals) down
 }
+```
 
+```js
 // app.js
+import express from 'express';
+import { shelfProxy } from './shelf-proxy.mjs';
+
 const app = express();
-app.use('/api/shelf', requireUser, shelfProxy); // requireUser: verify YOUR session first. Mount before express.json().
+// requireUser: verify YOUR session first (the cookie session of a web page, or the bearer token an app sends).
+app.use('/api/shelf', requireUser, shelfProxy); // before express.json()
 app.use(express.json());
 ```
 
-Also: keep the key in your secret manager, give it the narrowest scope Shelf offers, rate-limit the route per user, set
-a body size limit on your edge, and never log the `Authorization` header you add.
+Also: keep the key in your secret manager, give it the narrowest access that works (`Read only` unless the integration
+writes), set a body size limit on your edge, and never log the `Authorization` header you add.
 
 ## Use only what you need
 
@@ -478,6 +538,44 @@ Short version of what matters in production:
   folder), never touch the key's own folder (403), and answer 409 `conflict` for a duplicate sibling name, a move into
   itself or nesting past 64 levels. Delete moves the folder and its documents to the owner's trash. `parent_id` cannot
   be `null`; leave it out to create directly in the key's folder.
+
+### Confirm before deleting
+
+The SDK never asks for you: `FolderCard`'s delete button calls `onDeleteFolder` at once, and `client.deleteFile` /
+`deleteFolder` send the request as soon as they are called. Ask first, in the handler, with the same words Shelf web and
+`@pj-slf-998231/sdk` use, so people know nothing is lost:
+
+- A document: **Move <name> to the Shelf trash? You can restore it in Shelf.**
+- A folder: **Move “<name>” and everything in it to the Shelf trash? You can restore it in Shelf.**
+
+Name the confirming button **Confirm delete** and give it the destructive style; the other is **Cancel**.
+
+```tsx
+import { Alert } from 'react-native';
+import { useShelf, type ShelfDocument, type ShelfFolder } from '@pj-slf-998231/sdk-react-native';
+
+const confirm = (message: string, run: () => void) =>
+  Alert.alert('Delete', message, [
+    { text: 'Cancel', style: 'cancel' },
+    { text: 'Confirm delete', style: 'destructive', onPress: run },
+  ]);
+
+export function useConfirmedDeletes(onError: (e: unknown) => void) {
+  const { client } = useShelf();
+  return {
+    deleteDocument: (doc: ShelfDocument) =>
+      confirm(`Move ${doc.filename} to the Shelf trash? You can restore it in Shelf.`, () => {
+        client.deleteFile(doc.id).catch(onError);
+      }),
+    deleteFolder: (folder: ShelfFolder) =>
+      confirm(`Move “${folder.name}” and everything in it to the Shelf trash? You can restore it in Shelf.`, () => {
+        client.deleteFolder(folder.id).catch(onError);
+      }),
+  };
+}
+
+// <FolderList parentId={folderId} onDeleteFolder={deletes.deleteFolder} />
+```
 
 ## Known limits
 
