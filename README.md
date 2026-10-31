@@ -150,7 +150,8 @@ a body size limit on your edge, and never log the `Authorization` header you add
 ## Use only what you need
 
 Each entry is its own import path and Metro bundles only what that path imports. These four are complete, working
-shapes. `getHeaders` and `baseUrl` are the proxy settings from above.
+shapes. `getHeaders` and `baseUrl` are the proxy settings from above. The examples marked `check` in this README's
+source are type-checked against the built package (`npm run check:readme`, in CI).
 
 ### (a) A camera button only
 
@@ -161,11 +162,15 @@ npm install @pj-slf-998231/sdk-react-native
 npx expo install expo-image-picker
 ```
 
-```tsx
+```tsx check
 import { CameraButton } from '@pj-slf-998231/sdk-react-native/camera';
 
-<CameraButton baseUrl="https://api.example.com/api/shelf" getHeaders={() => ({ Authorization: `Bearer ${token}` })}
-  onUploaded={(doc) => console.log(doc.id)} onError={(e) => console.warn(e.message)} />
+declare const token: string; // your user's session token for your proxy
+
+export const Capture = () => (
+  <CameraButton baseUrl="https://api.example.com/api/shelf" getHeaders={() => ({ Authorization: `Bearer ${token}` })}
+    onUploaded={(doc) => console.log(doc.id)} onError={(e) => console.warn(e.message)} />
+);
 ```
 
 Captured photos go through a persistent outbox, so one taken offline still arrives. `mode="scan"` additionally needs
@@ -179,21 +184,26 @@ the picker is bundled: [docs/size-report.md](docs/size-report.md) proves it on a
 npx expo install expo-document-picker expo-image-picker @react-native-community/netinfo @react-native-async-storage/async-storage
 ```
 
-```tsx
+```tsx check
 import { ShelfProvider } from '@pj-slf-998231/sdk-react-native';
 import { createAsyncStorageAdapter } from '@pj-slf-998231/sdk-react-native/storage/asyncstorage';
 import { DocumentPickerButton, PhotoLibraryButton } from '@pj-slf-998231/sdk-react-native/picker';
 import { useOutbox } from '@pj-slf-998231/sdk-react-native/upload';
 import { UploadStatusBadge, OfflineBanner } from '@pj-slf-998231/sdk-react-native/upload';
 
+declare const BASE_URL: string;
+declare const getHeaders: () => Promise<Record<string, string>>;
+
 const storage = createAsyncStorageAdapter();
 
-<ShelfProvider baseUrl={BASE_URL} getHeaders={getHeaders} storage={storage} cacheScope={userId}>
-  <OfflineBanner />
-  <DocumentPickerButton multiple type={['application/pdf', 'image/*']} folderId={folderId} />
-  <PhotoLibraryButton multiple folderId={folderId} />
-  <QueueList />
-</ShelfProvider>
+export const Uploads = ({ userId, folderId }: { userId: string; folderId: string }) => (
+  <ShelfProvider baseUrl={BASE_URL} getHeaders={getHeaders} storage={storage} cacheScope={userId}>
+    <OfflineBanner />
+    <DocumentPickerButton multiple type={['application/pdf', 'image/*']} folderId={folderId} />
+    <PhotoLibraryButton multiple folderId={folderId} />
+    <QueueList />
+  </ShelfProvider>
+);
 
 function QueueList() {
   const { snapshot } = useOutbox();
@@ -244,14 +254,19 @@ wait while offline and retry on reconnect; without it the device is assumed alwa
 
 No UI from the SDK; you draw everything. Needs no optional peer (add a storage adapter if you want a persisted cache).
 
-```tsx
-import { ShelfProvider } from '@pj-slf-998231/sdk-react-native';
-import { useFolder, useDocuments, useDocumentText } from '@pj-slf-998231/sdk-react-native/hooks';
+```tsx check
+import { FlatList, Text } from 'react-native';
+import { useDocuments } from '@pj-slf-998231/sdk-react-native/hooks';
 
-function Docs({ folderId }: { folderId: string }) {
-  const { items, loading, error, offline, hasMore, loadMore } = useDocuments(folderId, { pageSize: 30 });
+// Inside a <ShelfProvider>; useFolder, useFolders, useDocument, useDocumentText and useDocumentSite work the same way.
+export function Docs({ folderId }: { folderId: string }) {
+  const { items, loading, error, hasMore, loadMore } = useDocuments(folderId, { pageSize: 30 });
   // items: cached data first, then replaced by the network (stale-while-revalidate)
-  return <MyList data={items} onEnd={hasMore ? loadMore : undefined} />;
+  if (error && !items.length) return <Text>Couldn't load the documents.</Text>;
+  return (
+    <FlatList data={items} keyExtractor={(d) => d.id} renderItem={({ item }) => <Text>{item.filename}</Text>}
+      onEndReached={hasMore ? loadMore : undefined} refreshing={loading} />
+  );
 }
 ```
 
@@ -265,13 +280,19 @@ npx expo install @shopify/flash-list expo-file-system react-native-gesture-handl
   @react-native-async-storage/async-storage @react-native-community/netinfo
 ```
 
-```tsx
+```tsx check
 import { FolderHeader, FolderList } from '@pj-slf-998231/sdk-react-native/folders';
 import { DocumentList } from '@pj-slf-998231/sdk-react-native/documents';
 import { DocumentScreen } from '@pj-slf-998231/sdk-react-native/document';
 
+interface BrowserProps {
+  folderId: string | null;
+  onOpenFolder: (id: string | null | undefined) => void;
+  onOpenDocument: (id: string) => void;
+}
+
 // <ShelfProvider ...> at the root, wrapped in <GestureHandlerRootView> for pinch-to-zoom
-function Browser({ folderId, onOpenFolder, onOpenDocument }) {
+export function Browser({ folderId, onOpenFolder, onOpenDocument }: BrowserProps) {
   return (
     <>
       <FolderHeader folderId={folderId} onNavigate={(f) => onOpenFolder(f?.id)} />
@@ -280,7 +301,7 @@ function Browser({ folderId, onOpenFolder, onOpenDocument }) {
     </>
   );
 }
-const Detail = ({ documentId }) => <DocumentScreen documentId={documentId} />;   // Text / Preview / Content tabs
+export const Detail = ({ documentId }: { documentId: string }) => <DocumentScreen documentId={documentId} />; // Text / Preview / Content tabs
 ```
 
 Add `<PhotoLibraryButton>`, `<CameraButton>` or `<DocumentPickerButton>` beside them for capture.
@@ -390,8 +411,10 @@ showing stale data as live) but keeps the upload queue. Sign-out is the one thin
 
 **On sign-out, clear what the device kept, in one call:**
 
-```ts
-import { clearAll } from '@pj-slf-998231/sdk-react-native';
+```ts check
+import { clearAll, type StorageAdapter } from '@pj-slf-998231/sdk-react-native';
+
+declare const storage: StorageAdapter, baseUrl: string, userId: string;
 
 await clearAll({ storage, baseUrl, cacheScope: userId }); // omit the scope args to clear every user
 // same as clearCache({ storage, baseUrl, cacheScope: userId, everything: true })
@@ -425,8 +448,10 @@ proxy's 503 `not_configured`. The host's `onAuthLost` is called **once**, not on
   values, truncated to 64 bits (16 hex chars). The credential is never stored or logged; the fingerprint is kept in memory and,
   for a paused outbox, in storage next to the queue (see the persisted pause above).
 
-```ts
-import { getAuthSession, credentialFingerprint } from '@pj-slf-998231/sdk-react-native';
+```ts check
+import { getAuthSession, credentialFingerprint, type ShelfClient, type ShelfError } from '@pj-slf-998231/sdk-react-native';
+
+declare const client: ShelfClient, error: ShelfError, token: string;
 
 const session = getAuthSession(client);
 session.onEpisode((e) => console.log(e.type));        // 'start' | 'end' (cause: success | resume | credential)

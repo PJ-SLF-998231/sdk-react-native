@@ -23,6 +23,8 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run check:size
+      # The README's `tsx check` / `ts check` examples, compiled against dist as an app imports them.
+      - run: npm run check:readme
       - run: npm pack --dry-run
 
   gitleaks:

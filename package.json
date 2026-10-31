@@ -147,6 +147,7 @@
     "test": "jest",
     "build": "tsup",
     "check:size": "node scripts/check-entry-graph.mjs",
+    "check:readme": "node scripts/check-readme.mjs",
     "prepack": "npm run build"
   },
   "peerDependencies": {
