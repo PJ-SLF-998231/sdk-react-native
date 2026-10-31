@@ -204,7 +204,7 @@
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.25.0",
+    "@babel/core": "^8.0.9",
     "@react-native/babel-preset": "^0.88.1",
     "@react-native/metro-config": "^0.88.1",
     "@testing-library/react-native": "^13.3.3",
