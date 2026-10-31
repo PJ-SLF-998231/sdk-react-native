@@ -35,6 +35,9 @@ export type BlockType = Block['type'];
 /** The fixed order the site lays blocks out in, whatever order the spec lists them. */
 export const BLOCK_ORDER: readonly BlockType[] = ['hero', 'summary', 'key_facts', 'amount', 'parties', 'timeline', 'table', 'source'];
 
+/** Tables a site may have (docs/document-site.schema.json: each type at most once except table, at most 3). */
+const MAX_TABLES = 3;
+
 /** A block this version could not draw. */
 export interface UnknownBlockReport {
   /** The block's `type` as sent ('' when it has none). */
@@ -170,6 +173,7 @@ export function parseSiteSpec(spec: unknown): ParsedSite {
   const blocks: Block[] = [];
   const unknown: UnknownBlockReport[] = [];
   const seen = new Set<string>();
+  let tables = 0;
   raw.forEach((b, index) => {
     const type = isObj(b) && typeof b.type === 'string' ? b.type : '';
     if (!(BLOCK_ORDER as readonly string[]).includes(type)) {
@@ -177,13 +181,14 @@ export function parseSiteSpec(spec: unknown): ParsedSite {
       return;
     }
     const read = isObj(b) && isObj(b.props) ? readBlock(type, b.props) : undefined;
-    // Each type once (tables up to three): a repeat of a single-use block is dropped like any other unusable one.
-    const duplicate = type !== 'table' && seen.has(type);
+    // Each type once, tables up to three (the schema's limit): a repeat past that is dropped like any other unusable block.
+    const duplicate = type === 'table' ? tables >= MAX_TABLES : seen.has(type);
     if (!read || duplicate) {
       unknown.push({ type, index, reason: 'invalid', block: b });
       return;
     }
     seen.add(type);
+    if (type === 'table') tables += 1;
     blocks.push(read);
   });
   blocks.sort((a, b) => BLOCK_ORDER.indexOf(a.type) - BLOCK_ORDER.indexOf(b.type));
