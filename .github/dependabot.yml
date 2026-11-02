@@ -7,7 +7,19 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+      day: "monday"
+      time: "06:00"
+      timezone: "Africa/Johannesburg"
+    # The shared self-hosted runner pool is capped; at most 3 open version-update
+    # PRs per ecosystem keeps a Dependabot burst from queueing CI runs.
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+    # Wait before proposing fresh releases (version updates only; security
+    # updates ignore cooldown). Majors wait longer.
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
     groups:
       github-actions-minor-patch:
         patterns: ["*"]
@@ -18,10 +30,27 @@ updates:
       - "/example"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+      day: "monday"
+      time: "06:00"
+      timezone: "Africa/Johannesburg"
+    # The shared self-hosted runner pool is capped; at most 3 open version-update
+    # PRs per ecosystem keeps a Dependabot burst from queueing CI runs.
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+    # Wait before proposing fresh releases (version updates only; security
+    # updates ignore cooldown). Majors wait longer.
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
     groups:
-      npm-minor-patch:
-        patterns: ["*"]
+      # Production and dev dependencies are grouped separately; majors are
+      # excluded from both and arrive one PR each, capped by the limit above.
+      dependencies:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+      development-dependencies:
+        dependency-type: "development"
         update-types: ["minor", "patch"]
     # Expo SDK upgrades go through `npx expo install --fix`, which keeps
     # react, react-native and the expo packages on the versions one SDK
