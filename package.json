@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "description": "React Native client and UI for the Shelf integration API",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
+  "homepage": "https://github.com/PJ-SLF-998231/sdk-react-native#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PJ-SLF-998231/sdk-react-native.git"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "provenance": true
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
