@@ -6,7 +6,7 @@ on:
 
 permissions:
   contents: read
-  packages: write
+  id-token: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -28,13 +28,12 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          registry-url: https://npm.pkg.github.com
-          scope: '@pj-slf-998231'
+          registry-url: https://registry.npmjs.org
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
       - run: npm run check:size
-      - run: npm publish
+      - run: npm publish --provenance --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

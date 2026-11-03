@@ -18,13 +18,7 @@ entry point, so an app bundles and installs only what it uses.
 
 ## Install
 
-The package is private on GitHub Packages. Point the scope at it once (the token needs `read:packages`; keep it in your
-CI secrets or your user `~/.npmrc`, never in the repo):
-
-```ini
-# .npmrc
-@pj-slf-998231:registry=https://npm.pkg.github.com
-```
+The package is published on npm:
 
 ```sh
 npm install @pj-slf-998231/sdk-react-native
