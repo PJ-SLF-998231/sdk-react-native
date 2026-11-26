@@ -27,6 +27,9 @@ Checked against `/Users/mother/Git/shelf-sdk` (client.ts, types.ts, cache/, stor
    entry, and Metro would still have to parse the IndexedDB module.
 5. **Distribution.** The package is private on GitHub Packages. A hard dependency makes `npm ci` in CI and in every
    consumer app need a registry token. Vendoring keeps this package self-contained.
+
+   **Historical distribution rationale (superseded):** Both SDKs are now published publicly on npm.
+   The other reasons for vendoring the React Native client still apply.
 6. **Release coupling.** The web SDK is on its own 0.x cadence with web-only breaking changes (proxy semantics, CSS,
    fonts). A copied ~200-line client is cheaper than tracking them.
 
